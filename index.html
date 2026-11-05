@@ -149,7 +149,7 @@ const TABS=[
  ["lager","Lager",'<path d="M9 3h6v4l2 3v10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V10l2-3z"/><path d="M9 7h6"/>'],
  ["social","Social",'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6"/>']
 ];
-const KEYS=["clients","appts","treatments","products","entries","posts","vouchers"];
+const KEYS=["clients","appts","treatments","products","entries","posts","vouchers","log"];
 const S=Object.fromEntries(KEYS.map(k=>[k,[]]));
 // Nach der Microsoft-Registrierung hier die Anwendungs-ID (Client-ID) eintragen, siehe Anleitung Schritt 2
 const CLIENT_ID="5d63bae8-e8e0-4f45-83f9-32723337fb8c";
@@ -251,10 +251,13 @@ async function importContacts(src){
   if(!list.length)return;
   const known=new Set(S.clients.map(c=>phoneKey(c.phone)).filter(Boolean));
   list=list.map(k=>({...k,phone:k.tel[0]||"",dup:!!(k.tel[0]&&known.has(phoneKey(k.tel[0])))}));
-  sheet(list.length+" Kontakt"+(list.length===1?"":"e")+" gefunden",'<p class="note">Haken setzen, wer übernommen werden soll. Schon vorhandene Nummern sind nicht angehakt.</p><div class="list">'+
-    list.map((k,i)=>'<label class="row" style="cursor:pointer"><input type="checkbox" data-i="'+i+'" '+(k.dup?'':'checked')+' style="width:22px;height:22px;flex:none"><div class="main"><div class="t">'+esc(k.name||"(ohne Namen)")+'</div><div class="s">'+esc(k.phone||"keine Nummer")+'</div></div>'+(k.dup?'<span class="pill warn">schon da</span>':'')+'</label>').join("")+
+  sheet(list.length+" Kontakt"+(list.length===1?"":"e")+" gefunden",'<p class="note">Tippe die Kundinnen an, die übernommen werden sollen.</p><input type="search" id="imq" placeholder="Name suchen …" aria-label="Kontakt suchen" style="margin:8px 0"><div class="list" id="iml">'+
+    list.map((k,i)=>'<label class="row" style="cursor:pointer"><input type="checkbox" data-i="'+i+'" style="width:22px;height:22px;flex:none"><div class="main"><div class="t">'+esc(k.name||"(ohne Namen)")+'</div><div class="s">'+esc(k.phone||"keine Nummer")+'</div></div>'+(k.dup?'<span class="pill warn">schon da</span>':'')+'</label>').join("")+
     '</div><div class="actions" style="margin-top:12px"><button type="button" id="imc">Abbrechen</button><button class="primary" id="imgo">Übernehmen</button></div>',el=>{
       el.querySelector("#imc").onclick=closeSheet;
+      const go=el.querySelector("#imgo"),cnt=()=>{const n=el.querySelectorAll("input[data-i]:checked").length;go.textContent=n?n+" übernehmen":"Übernehmen";go.disabled=!n};cnt();
+      el.querySelector("#iml").addEventListener("change",cnt);
+      el.querySelector("#imq").oninput=e=>{const q=e.target.value.toLowerCase();el.querySelectorAll("#iml label").forEach(l=>l.hidden=q&&!l.textContent.toLowerCase().includes(q))};
       el.querySelector("#imgo").onclick=()=>{let n=0;el.querySelectorAll("input[data-i]:checked").forEach(cb=>{const k=list[+cb.dataset.i];
         S.clients.push({id:crypto.randomUUID?crypto.randomUUID():b64url(rand(12)),name:k.name||clientNameFor(k.phone),phone:k.phone,noName:!k.name});n++});
         if(n)dirty();closeSheet();render();toast(n+" Kundin"+(n===1?"":"nen")+" übernommen")};
@@ -433,11 +436,27 @@ function rangeOf(){
     custom:rFrom<=rTo?[rFrom,rTo]:[rTo,rFrom]}[rk];
 }
 const dlong=d=>fdate(d,{day:"numeric",month:"short",year:"numeric"});
-function exportExcel(){
+function buildReport(){
   const [from,to]=rangeOf(),R=periodReport(S,from,to);
-  const data=buildXlsx(reportSheets(R,id=>byId("appts",id),d=>fdate(d,{day:"2-digit",month:"2-digit",year:"numeric"}),id=>byId("vouchers",id)));
-  dlFile("Auszeit_"+from+"_bis_"+to+".xlsx",data,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  return {from,to,R,data:buildXlsx(reportSheets(R,id=>byId("appts",id),d=>fdate(d,{day:"2-digit",month:"2-digit",year:"numeric"}),id=>byId("vouchers",id))),name:reportFileName(from,to)};
+}
+const XLSX_TYPE="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+function exportExcel(){
+  const {R,data,name}=buildReport();
+  dlFile(name,data,XLSX_TYPE);
   const n=R.entries.filter(e=>e.kind==="in").length;toast("Excel-Datei gespeichert ("+n+(n===1?" Einnahme":" Einnahmen")+")",4000);
+}
+// Abrechnung als normale (unverschlüsselte) Excel-Datei in OneDrive: Abrechnungen/Jahr/…, wird nie automatisch gelöscht
+async function saveReportToOneDrive(btn){
+  if(mode!=="cloud")return toast("Dafür bitte zuerst mit OneDrive verbinden");
+  const {from,to,data,name}=buildReport(),path="Abrechnungen/"+from.slice(0,4)+"/"+name;
+  if(btn)busy(btn,"Speichere …");
+  try{
+    await Cloud.put(path,data,{type:XLSX_TYPE});
+    const id="abr-"+from+"-"+to,e={id,type:"abrechnung",from,to,file:path,date:today()};
+    const k=S.log.findIndex(x=>x.id===id);if(k>=0)S.log[k]=e;else S.log.push(e);dirty();render();
+    toast("In OneDrive gespeichert: Apps › Mein Kosmetikstudio › "+path.replace(/\//g," › "),6000);
+  }catch(x){if(btn)unbusy(btn);toast(x.code==="auth"?"Bitte zuerst bei Microsoft neu anmelden":x.code==="offline"?"Kein Internet – bitte später nochmal":"Speichern in OneDrive hat nicht geklappt",5000)}
 }
 
 // ---------- views ----------
@@ -453,6 +472,9 @@ function vHeute(){
   let h=heroHTML()+'<div class="kpis" style="margin-top:12px"><div class="kpi"><b>'+td.length+'</b><span>Termine heute</span></div><div class="kpi"><b>'+eur(monthIn(today().slice(0,7))).replace(",00","")+'</b><span>Einnahmen '+fdate(today(),{month:"long"})+'</span></div><div class="kpi"><b>'+low().length+'</b><span>nachbestellen</span></div></div>';
   if(mode==="local")h+='<div class="card" style="margin-top:16px;border-color:var(--warn)"><p><b>Nur auf diesem Gerät gespeichert</b></p><p class="note">Zum Testen okay. Für echte Daten bitte mit OneDrive verbinden – dann gibt es automatische Sicherungen.</p><div class="actions"><span></span><button data-act="settings">Einstellungen</button></div></div>';
   else if(syncMsg.startsWith("⚠"))h+='<div class="card" style="margin-top:16px;border-color:var(--warn)"><p><b>'+esc(syncMsg.slice(2))+'</b></p><p class="note">Deine Änderungen sind auf diesem Gerät gesichert und werden nachgeholt.</p><div class="actions"><span></span>'+(syncMsg.includes("anmelden")?'<button class="primary" data-act="relogin">Bei Microsoft anmelden</button>':'<button data-act="retry">Nochmal versuchen</button>')+'</div></div>';
+  const pm=(()=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-1);return iso(d).slice(0,7)})();
+  if(mode==="cloud"&&S.entries.some(e=>(e.date||"").startsWith(pm))&&!S.log.some(x=>x.type==="abrechnung"&&x.from===pm+"-01"&&x.to.startsWith(pm)))
+    h+='<div class="card" style="margin-top:16px;border-color:var(--gold)"><p><b>Abrechnung '+fdate(pm+"-15",{month:"long"})+' noch nicht gesichert</b></p><p class="note">Ein Tipp speichert die Excel-Datei für den Steuerberater in OneDrive (Ordner Abrechnungen).</p><div class="actions"><span></span><button class="primary" data-act="abrprev">Jetzt in OneDrive speichern</button></div></div>';
   if(bioOffer)h+='<div class="card" style="margin-top:16px"><p><b>Schneller entsperren?</b></p><p class="note">Mit Face ID, Fingerabdruck oder Windows Hello statt Passwort – auf diesem Gerät.</p><div class="actions"><button class="ghost" data-act="bionot">Nein danke</button><button class="primary" data-act="bioyes">Einschalten</button></div></div>';
   if(!S.treatments.length&&!S.clients.length)h+='<div class="card" style="margin-top:16px"><p><b>Willkommen!</b> So geht’s los:</p><p class="note">1. Preisliste übernehmen (alle Leistungen von miraswellness.de, jederzeit änderbar)<br>2. Kundinnen eintragen<br>3. Termine anlegen – dann siehst du hier deinen Tag, Erinnerungen und Geburtstage.</p><div class="actions"><button class="primary" data-act="std">Preisliste von der Webseite übernehmen</button></div></div>';
   h+='<h2>Heute</h2>'+(td.length?'<div class="list">'+td.map(a=>rowAppt(a,a.paid?'<span class="pill ok">bezahlt</span>':'<button class="sm" data-act="pay" data-id="'+a.id+'">'+eur(a.price)+' kassieren</button>')).join("")+'</div>':'<div class="list"><div class="empty">Heute keine Termine. Neue Termine legst du mit <b>+ Termin</b> an.</div></div>');
@@ -487,7 +509,9 @@ function vKasse(){
   const [from,to]=rangeOf(),R=periodReport(S,from,to),e=R.entries.slice().reverse(),inn=R.income,out=R.expense;
   let h='<div class="chips" role="group" aria-label="Zeitraum">'+RANGES.map(([k,l])=>'<button class="chip" data-act="rk" data-k="'+k+'" aria-pressed="'+(rk===k)+'">'+l+'</button>').join("")+'</div>';
   if(rk==="custom")h+='<div class="grid2" style="margin-top:10px"><label class="f" for="rf">Von<input type="date" id="rf" value="'+rFrom+'"></label><label class="f" for="rt">Bis<input type="date" id="rt" value="'+rTo+'"></label></div>';
-  h+='<div class="bar"><b class="period">'+dlong(from)+' – '+dlong(to)+'</b><button class="sm primary" data-act="xlsx">Als Excel exportieren</button></div>';
+  const saved=S.log.find(x=>x.type==="abrechnung"&&x.from===from&&x.to===to);
+  h+='<div class="bar"><b class="period">'+dlong(from)+' – '+dlong(to)+'</b><span style="display:flex;gap:6px;flex-wrap:wrap">'+(mode==="cloud"?'<button class="sm primary" data-act="xlsxod">In OneDrive speichern</button>':'')+'<button class="sm'+(mode==="cloud"?'':' primary')+'" data-act="xlsx">Excel herunterladen</button></span></div>';
+  if(saved)h+='<p class="note" style="margin:0 2px 8px">✓ Abrechnung am '+fdate(saved.date,{day:"numeric",month:"short"})+' in OneDrive gespeichert ('+esc(saved.file.split("/").pop())+'). Nochmal speichern ersetzt sie.</p>';
   h+='<div class="kpis"><div class="kpi"><b>'+eur(inn)+'</b><span>Einnahmen</span></div><div class="kpi"><b>'+eur(out)+'</b><span>Ausgaben</span></div><div class="kpi"><b style="color:'+(inn-out>=0?"var(--sage)":"var(--warn)")+'">'+eur(inn-out)+'</b><span>Gewinn</span></div></div>';
   const pays=Object.entries(R.byPay).map(([k,v])=>esc(k)+' '+eur(v)).join(' · ');
   h+='<p class="note" style="margin:8px 2px 0">'+R.appts.length+' Termin'+(R.appts.length===1?'':'e')+(R.appts.length?' · '+R.paid+' bezahlt':'')+(pays?' · '+pays:'')+'</p>';
@@ -553,7 +577,8 @@ document.addEventListener("click",e=>{
     done:()=>{const p=byId("posts",id);save("posts",{...p,done:true});toast("Super, veröffentlicht!")},
     copypost:()=>copy(byId("posts",id).idea),
     impick:()=>importContacts("picker"), imvcf:()=>importContacts("vcf"),
-    rk:()=>{rk=a.dataset.k;render()}, xlsx:exportExcel, voucher:()=>showVoucher(byId("vouchers",id)), newvoucher:()=>editVoucher(),
+    rk:()=>{rk=a.dataset.k;render()}, xlsx:exportExcel, xlsxod:()=>saveReportToOneDrive(a),
+    abrprev:()=>{rk="lastmonth";saveReportToOneDrive(a)}, voucher:()=>showVoucher(byId("vouchers",id)), newvoucher:()=>editVoucher(),
   })[act]?.();
 });
 document.addEventListener("input",e=>{if(e.target.id==="search"){q=e.target.value;render()}});
@@ -586,6 +611,34 @@ function parseVCards(text){
 // Für den Vergleich: nur Ziffern, deutsche 0 am Anfang -> 49
 const phoneKey=p=>{let d=String(p||"").replace(/[^\d+]/g,"");if(d.startsWith("+"))d=d.slice(1);else if(d.startsWith("00"))d=d.slice(2);else if(d.startsWith("0"))d="49"+d.slice(1);return d};
 // ===== Ende Kontakte =====
+
+// ===== Aufräumen der Tagessicherungen: älter als 3 Monate wird gelöscht =====
+// files/folders: Pfade unter "Sicherungen/" (z. B. "Sicherungen/2026/11/studio-2026-11-05.enc", "Sicherungen/2026/08")
+function pruneTargets(files,folders,todayIso,months=3){
+  const [y,m,d]=todayIso.split("-").map(Number);
+  const cutoff=new Date(Date.UTC(y,m-1-months,d)).toISOString().slice(0,10);
+  const old=[];
+  for(const f of folders){
+    const mm=f.match(/^Sicherungen\/(\d{4})(?:\/(\d{2}))?$/);if(!mm)continue;
+    const end=mm[2]?new Date(Date.UTC(+mm[1],+mm[2],0)).toISOString().slice(0,10):mm[1]+"-12-31";
+    if(end<cutoff)old.push(f);
+  }
+  const outer=old.filter(f=>!old.some(g=>g!==f&&f.startsWith(g+"/")));
+  const inside=p=>outer.some(f=>p.startsWith(f+"/"));
+  const oldFiles=files.filter(p=>p.startsWith("Sicherungen/")&&!inside(p)&&((p.match(/(\d{4}-\d\d-\d\d)/)||[])[1]||"9999")<cutoff);
+  return {cutoff,folders:outer,files:oldFiles};
+}
+// Ablageort einer Sicherung nach Datum
+const bkPath=(name,dateIso)=>"Sicherungen/"+dateIso.slice(0,4)+"/"+dateIso.slice(5,7)+"/"+name;
+// Dateiname einer Abrechnung nach Zeitraum
+function reportFileName(from,to){
+  const [y,m]=from.split("-"),last=new Date(Date.UTC(+y,+m,0)).toISOString().slice(0,10);
+  const MON=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+  if(from===y+"-01-01"&&to===y+"-12-31")return "Auszeit_"+y+"_Gesamtjahr.xlsx";
+  if(from.endsWith("-01")&&to===last)return "Auszeit_"+y+"-"+m+"_"+MON[+m-1]+".xlsx";
+  return "Auszeit_"+from+"_bis_"+to+".xlsx";
+}
+// ===== Ende Aufräumen =====
 
 // ===== Excel-Datei (.xlsx) ohne Fremdbibliothek: ZIP (unkomprimiert) + Tabellen-XML =====
 // Zelle: Text | Zahl | {date:"JJJJ-MM-TT"} | {eur:Zahl} | {b:"fett"} | {beur:Zahl} | null
@@ -818,21 +871,38 @@ const Cloud={
   },
   async head(name){const r=await gfetch(encodeURI(name)+"?$select=eTag");if(r.status===404)return null;if(!r.ok)throw err("http");return (await r.json()).eTag},
   // shortcut: einfacher Upload bis 250 MB; die Datei ist nach Jahren noch wenige MB
-  async put(name,text,{ifMatch,noOverwrite}={}){
-    const r=await gfetch(encodeURI(name)+":/content"+(noOverwrite?"?@microsoft.graph.conflictBehavior=fail":""),{method:"PUT",headers:{"Content-Type":"text/plain",...(ifMatch?{"If-Match":ifMatch}:{})},body:text});
+  async put(name,text,{ifMatch,noOverwrite,type}={}){
+    const r=await gfetch(encodeURI(name)+":/content"+(noOverwrite?"?@microsoft.graph.conflictBehavior=fail":""),{method:"PUT",headers:{"Content-Type":type||"text/plain",...(ifMatch?{"If-Match":ifMatch}:{})},body:text});
     if(r.status===412)throw err("conflict");
     if(r.status===409)throw err("exists");
     if(!r.ok)throw err("http","Speichern in OneDrive fehlgeschlagen ("+r.status+")");
     return (await r.json()).eTag;
   },
-  async list(){const r=await gfetch("Sicherungen:/children?$select=name&$top=999");if(r.status===404)return [];if(!r.ok)throw err("http");return (await r.json()).value.map(x=>BK+x.name)}
+  async del(name){const r=await gfetch(encodeURI(name),{method:"DELETE"});if(!r.ok&&r.status!==404)throw err("http")},
+  // Sicherungen rekursiv: Sicherungen/Jahr/Monat/Datei
+  async tree(){
+    const files=[],folders=[];
+    const walk=async(path,depth)=>{const r=await gfetch(encodeURI(path)+":/children?$select=name,folder&$top=999");if(r.status===404)return;if(!r.ok)throw err("http");
+      for(const x of (await r.json()).value){const p=path+"/"+x.name;if(x.folder){folders.push(p);if(depth<2)await walk(p,depth+1)}else files.push(p)}};
+    await walk("Sicherungen",0);return {files,folders};
+  },
+  async list(){return (await this.tree()).files}
 };
 const Local={
   async get(name){const t=await kget("b:"+name);return t?{text:t,etag:"local"}:null},
   async head(name){return (await kget("b:"+name))?"local":null},
   async put(name,text,{noOverwrite}={}){if(noOverwrite&&await kget("b:"+name))throw err("exists");await kset("b:"+name,text);return "local"},
+  async del(name){await kdel("b:"+name)},
+  async tree(){const files=await this.list(),folders=new Set();files.forEach(f=>{const p=f.split("/");for(let i=2;i<p.length;i++)folders.add(p.slice(0,i).join("/"))});return {files,folders:[...folders]}},
   async list(){return (await kkeys()).filter(k=>String(k).startsWith("b:"+BK)).map(k=>k.slice(2))}
 };
+// Sicherungen älter als 3 Monate löschen (einmal am Tag, nach der Tagessicherung)
+async function pruneBackups(){
+  const t=await Store.tree(),r=pruneTargets(t.files,t.folders,today());
+  for(const f of r.folders)await Store.del(f);
+  for(const f of r.files)await Store.del(f);
+  if(mode==="local")for(const f of r.folders)for(const k of (await Store.list()).filter(x=>x.startsWith(f+"/")))await Store.del(k);
+}
 
 // ===== Abgleich =====
 let mode=null, Store=Local, V=null, remoteText=null, etag=null, rev=0, syncing=false, pushTimer=null, lastSync=null, syncMsg="", notes=[];
@@ -854,8 +924,9 @@ async function push(){
     if(remoteText){
       // Morgenstand: vor der ersten Änderung des Tages den bisherigen Stand als Tagessicherung ablegen
       if(await kget("daily")!==today()){
-        try{await Store.put(BK+"studio-"+today()+".enc",remoteText,{noOverwrite:true})}catch(e){if(e.code!=="exists")throw e}
+        try{await Store.put(bkPath("studio-"+today()+".enc",today()),remoteText,{noOverwrite:true})}catch(e){if(e.code!=="exists")throw e}
         await kset("daily",today());
+        pruneBackups().catch(()=>{});
       }
       await Store.put(PREV,remoteText);
     }
@@ -865,7 +936,7 @@ async function push(){
       if(e.code!=="conflict"&&e.code!=="exists")throw e;
       // Zwischendurch woanders gespeichert: diesen Stand aufheben, dann unseren speichern
       const other=await Store.get(MAIN);
-      if(other){await Store.put(BK+"konflikt-"+stamp()+".enc",other.text);notes.push("Auf einem anderen Gerät wurde parallel gespeichert. Dieser Stand liegt unter „Sicherungen“ als Konflikt-Datei.")}
+      if(other){await Store.put(bkPath("konflikt-"+stamp()+".enc",today()),other.text);notes.push("Auf einem anderen Gerät wurde parallel gespeichert. Dieser Stand liegt unter „Sicherungen“ als Konflikt-Datei.")}
       newTag=await Store.put(MAIN,text,other?{ifMatch:other.etag}:{});
     }
     etag=newTag;remoteText=text;await kset("etag",etag);
@@ -905,7 +976,7 @@ async function loadData(){
     let remoteOk=false;try{if(rem)remoteOk=!!(await dec(rem.text))}catch{}
     remoteText=remoteOk?remote.text:pick.text;
     if(pick.src==="local"&&pending&&remote&&remoteOk&&remote.etag!==await kget("etag")){
-      await Store.put(BK+"konflikt-"+stamp()+".enc",remote.text);
+      await Store.put(bkPath("konflikt-"+stamp()+".enc",today()),remote.text);
       notes.push("Auf einem anderen Gerät gab es Änderungen, während dieses offline war. Die sind unter „Sicherungen“ als Konflikt-Datei aufgehoben.");
     }
     if(pending||pick.src!=="local"||(rem&&!remoteOk))dirty();
@@ -1080,7 +1151,7 @@ async function sheetSettings(){
 }
 async function restoreText(text,label){
   let d;try{d=await decryptFile(text,V.dek)}catch{toast("Diese Datei lässt sich nicht öffnen (beschädigt oder aus einem anderen Studio).",5000);return}
-  try{await Store.put(BK+"vor-wiederherstellung-"+stamp()+".enc",await encryptFile(S,V.dek,V.hdr))}catch{}
+  try{await Store.put(bkPath("vor-wiederherstellung-"+stamp()+".enc",today()),await encryptFile(S,V.dek,V.hdr))}catch{}
   setData(d.data);dirty();closeSheet();render();toast(label+" wiederhergestellt");
 }
 async function sheetBackups(){
