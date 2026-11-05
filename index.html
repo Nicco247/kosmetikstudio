@@ -76,8 +76,12 @@ nav button[aria-current="page"]{color:var(--gold)}
 input,select,textarea{font:inherit;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 12px}
 textarea{min-height:80px;resize:vertical}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
-.sheet-bg{position:fixed;inset:0;background:rgb(0 0 0 / .6);z-index:20;display:flex;align-items:flex-end;justify-content:center}
-.sheet{background:var(--surface);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+html,body{overscroll-behavior-y:none}
+input[type=checkbox]{accent-color:var(--gold)}
+.trpick #trdone{align-self:flex-end}
+body.noscroll{overflow:hidden}
+.sheet-bg{position:fixed;inset:0;background:rgb(0 0 0 / .6);z-index:20;overscroll-behavior:contain;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:88vh;max-height:calc(100dvh - env(safe-area-inset-top,0px) - 12px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:20px 20px 0 0;padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .sheet h3{font-family:var(--display);font-weight:400;font-size:34px;line-height:1.1;margin:0 0 12px;color:var(--gold)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form{display:flex;flex-direction:column;gap:12px}
@@ -87,6 +91,14 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu
 .note{font-size:13px;color:var(--muted)}
 .allergy{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:8px 10px;font-weight:600;font-size:14px}
 .status{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 80px);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:13px;z-index:30}
+.trsel{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0 6px}
+.tchip{display:inline-flex;align-items:center;gap:6px;background:var(--gold-soft);color:var(--ink);border:1px solid var(--gold);border-radius:99px;padding:4px 4px 4px 12px;font-size:14px;font-weight:600}
+.tchip b{color:var(--gold);font-weight:700}
+.tchip button{border:0;background:transparent;color:var(--muted);padding:2px 8px;font-size:18px;line-height:1}
+.trsel .note{flex-basis:100%}
+.trpick{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.trpick .list{max-height:46vh;overflow-y:auto;overscroll-behavior:contain}
+label.f,div.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 6px;margin-top:4px;scrollbar-width:none}
 .chip{border-radius:99px;padding:7px 13px;font-size:14px;font-weight:600;color:var(--muted);flex:none}
 .chip[aria-pressed="true"]{background:var(--gold-soft);border-color:var(--gold-2);color:var(--gold)}
@@ -178,10 +190,11 @@ function sheet(title,html,onMount){
   const bg=document.createElement("div");bg.className="sheet-bg";bg.id="sheet";
   bg.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><h3>'+esc(title)+'</h3>'+html+'</div>';
   bg.addEventListener("click",e=>{if(e.target===bg)closeSheet()});
-  document.body.appendChild(bg);onMount&&onMount(bg);
-  bg.querySelector("input,select,textarea")?.focus();
+  document.body.appendChild(bg);document.body.classList.add("noscroll");onMount&&onMount(bg);
+  // Am Handy nicht sofort die Tastatur öffnen – sonst schiebt das iPhone das Fenster aus dem Bild
+  if(matchMedia("(pointer:fine)").matches)bg.querySelector("input,select,textarea")?.focus();
 }
-function closeSheet(){document.getElementById("sheet")?.remove()}
+function closeSheet(){document.getElementById("sheet")?.remove();document.body.classList.remove("noscroll")}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
 
 function field(f,v){
@@ -263,25 +276,50 @@ async function importContacts(src){
         if(n)dirty();closeSheet();render();toast(n+" Kundin"+(n===1?"":"nen")+" übernommen")};
     });
 }
+// Behandlungen eines Termins: neue Termine haben items[], alte nur den Text "treatment"
+const apptItems=a=>a.items&&a.items.length?a.items:(a.treatment?[{name:a.treatment,price:+a.price||0,duration:+(S.treatments.find(t=>t.name===a.treatment)?.duration)||0}]:[]);
+const apptMinutes=a=>apptItems(a).reduce((s,x)=>s+(+x.duration||0),0);
 function editAppt(a={}){
-  const tr=S.treatments.slice().sort((x,y)=>x.name.localeCompare(y.name));
   const cl=S.clients.slice().sort((x,y)=>x.name.localeCompare(y.name));
+  let sel=apptItems(a).map(x=>({...x}));
   const el=form(a.id?"Termin bearbeiten":"Neuer Termin",[
     {k:"date",label:"Datum",type:"date",def:day,half:1},{k:"time",label:"Uhrzeit",type:"time",def:"10:00",half:1},
     {k:"clientId",label:"Kundin",type:"select",opts:[["","– Kundin wählen –"],...cl.map(c=>[c.id,c.name])]},
-    {k:"treatment",label:"Behandlung",type:"select",opts:[["","– Behandlung wählen –"],...tr.map(t=>[t.name,t.name+" · "+t.duration+" Min."])]},
-    {k:"price",label:"Preis (€)",type:"number",half:1},{k:"note",label:"Notiz",half:1}
-  ],a,o=>{o.clientName=byId("clients",o.clientId)?.name||"";if(!o.clientId){toast("Bitte eine Kundin wählen");return}save("appts",o);
+    {k:"price",label:"Preis gesamt (€)",type:"number",half:1},{k:"note",label:"Notiz",half:1}
+  ],a,o=>{o.clientName=byId("clients",o.clientId)?.name||"";if(!o.clientId){toast("Bitte eine Kundin wählen");return}
+    o.items=sel;o.treatment=sel.map(x=>x.name).join(" + ");
+    save("appts",o);
     const linked=S.entries.filter(e=>o.id&&e.apptId===o.id);
     if(linked.length===1&&linked[0].kind==="in")save("entries",{...linked[0],amount:+o.price||0,date:o.date,label:(o.treatment||"Behandlung")+" – "+o.clientName});
     else if(linked.length&&+o.price!==+a.price)toast("Mit Gutschein bezahlt – Betrag bitte in der Kasse prüfen",4500);
     toast("Termin gespeichert")},
    a.id&&(()=>{del("appts",a.id);S.entries.filter(e=>e.apptId===a.id).forEach(e=>del("entries",e.id));toast("Termin gelöscht")}),
    a.paid?'<p class="note">Bereits kassiert – ein geänderter Preis wird in der Kasse mit angepasst.</p>':'',"Termin löschen (Absage / zu früh)");
-  const t=el.querySelector("#f_treatment"),p=el.querySelector("#f_price");
-  t.onchange=()=>{const x=tr.find(x=>x.name===t.value);if(x)p.value=x.price};
+  const price=el.querySelector("#f_price");
   el.querySelector("#f_clientId").insertAdjacentHTML("afterend",'<button type="button" class="ghost" id="newcl" style="align-self:flex-start;padding:4px 0">+ Neue Kundin anlegen</button>');
-  el.querySelector("#newcl").onclick=()=>{const f=el.querySelector("#frm"),v={...a};["date","time","treatment","price","note"].forEach(k=>v[k]=f.elements[k].value);
+  // Behandlungs-Auswahl nach der Kundin
+  el.querySelector("#newcl").insertAdjacentHTML("afterend",'<div class="f"><span>Behandlungen</span><div id="trsel" class="trsel"></div><button type="button" class="sm" id="tradd">+ Behandlung hinzufügen</button><div id="trpick" class="trpick" hidden><input type="search" id="trq" placeholder="Behandlung suchen …" aria-label="Behandlung suchen"><div id="trlist" class="list"></div><button type="button" class="sm primary" id="trdone">Fertig</button></div></div>');
+  const box=el.querySelector("#trsel"),pick=el.querySelector("#trpick"),list=el.querySelector("#trlist"),q=el.querySelector("#trq");
+  const sum=()=>Math.round(sel.reduce((s,x)=>s+(+x.price||0),0)*100)/100;
+  const drawSel=()=>{
+    const mins=sel.reduce((s,x)=>s+(+x.duration||0),0);
+    box.innerHTML=sel.length?sel.map((x,i)=>'<span class="tchip">'+esc(x.name)+' <b>'+eur(x.price)+'</b><button type="button" data-rm="'+i+'" aria-label="'+esc(x.name)+' entfernen">×</button></span>').join("")+'<span class="note">'+sel.length+' Behandlung'+(sel.length===1?'':'en')+(mins?' · '+mins+' Min.':'')+' · zusammen '+eur(sum())+'</span>':'<span class="note">Noch keine ausgewählt.</span>';
+  };
+  const drawList=()=>{
+    const tr=S.treatments.slice().sort((x,y)=>x.name.localeCompare(y.name)),f=(q.value||"").toLowerCase();
+    if(!tr.length){list.innerHTML='<div class="empty">Noch keine Preisliste auf diesem Gerät. <button type="button" class="ghost" id="trstd">Preisliste von der Webseite übernehmen</button></div>';
+      list.querySelector("#trstd").onclick=async()=>{await stdPrices();drawList()};return}
+    list.innerHTML=tr.filter(t=>!f||t.name.toLowerCase().includes(f)).map(t=>'<label class="row" style="cursor:pointer"><input type="checkbox" data-n="'+esc(t.name)+'"'+(sel.some(x=>x.name===t.name)?' checked':'')+' style="width:22px;height:22px;flex:none"><div class="main"><div class="t">'+esc(t.name)+'</div><div class="s">'+(+t.duration||0)+' Min.</div></div><span class="num">'+eur(t.price)+'</span></label>').join("")||'<div class="empty">Nichts gefunden.</div>';
+  };
+  const changed=()=>{drawSel();price.value=sum()||""};
+  el.querySelector("#tradd").onclick=()=>{pick.hidden=!pick.hidden;if(!pick.hidden){drawList();pick.scrollIntoView({block:"nearest"})}};
+  el.querySelector("#trdone").onclick=()=>{pick.hidden=true};
+  q.oninput=drawList;
+  list.addEventListener("change",e=>{const n=e.target.dataset.n;if(!n)return;const t=S.treatments.find(x=>x.name===n);
+    if(e.target.checked){if(!sel.some(x=>x.name===n))sel.push({name:n,price:+t.price||0,duration:+t.duration||0})}else sel=sel.filter(x=>x.name!==n);changed()});
+  box.addEventListener("click",e=>{const i=e.target.dataset.rm;if(i==null)return;sel.splice(+i,1);changed();if(!pick.hidden)drawList()});
+  drawSel();if(!S.treatments.length){pick.hidden=false;drawList()}
+  el.querySelector("#newcl").onclick=()=>{const f=el.querySelector("#frm"),v={...a};["date","time","price","note"].forEach(k=>v[k]=f.elements[k].value);v.items=sel;v.treatment=sel.map(x=>x.name).join(" + ");
     editClient({},o=>editAppt({...v,clientId:o.id}))};
 }
 function editTreatment(t={}){form(t.id?"Behandlung bearbeiten":"Neue Behandlung",[
@@ -490,7 +528,7 @@ function vTermine(){
   const later=S.appts.filter(a=>a.date>today(13)).length, past=S.appts.filter(a=>a.date<today()).length;
   let h='<p class="note">Die nächsten 14 Tage'+(later?' · '+later+' Termine später':'')+(past?' · '+past+' vergangene (in der Kundinnenkartei)':'')+'</p>';
   days.forEach(d=>{const l=apptsOn(d);if(!l.length&&d!==today())return;
-    const mins=l.reduce((s,a)=>s+(+S.treatments.find(t=>t.name===a.treatment)?.duration||0),0);
+    const mins=l.reduce((s,a)=>s+apptMinutes(a),0);
     h+='<div class="bar"><h2>'+(d===today()?"Heute":d===today(1)?"Morgen":fdate(d))+'</h2><span class="note">'+l.length+' Termin'+(l.length===1?"":"e")+(mins?" · "+Math.floor(mins/60)+" h "+String(mins%60).padStart(2,"0")+" Min.":"")+'</span></div>';
     h+='<div class="list">'+(l.length?l.map(a=>rowAppt(a,'<span class="num">'+eur(a.price)+'</span>')).join(""):'<div class="empty">Frei.</div>')+'</div>'});
   if(!S.appts.some(a=>a.date>=today()))h+='<div class="card" style="margin-top:12px"><p class="note">Hier erscheinen deine Termine nach Tagen sortiert, mit Behandlungsdauer pro Tag.</p></div>';
@@ -713,7 +751,12 @@ function periodReport(S,from,to){
   const appts=S.appts.filter(a=>inR(a.date)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   const ins=entries.filter(e=>e.kind==="in"), outs=entries.filter(e=>e.kind==="out");
   const byPay={};ins.forEach(e=>{const k=e.pay||"bar";byPay[k]=(byPay[k]||0)+(+e.amount||0)});
-  const byTreat={};appts.filter(a=>a.paid).forEach(a=>{const k=a.treatment||"Ohne Angabe";const t=byTreat[k]||(byTreat[k]={n:0,sum:0});t.n++;t.sum+=+a.price||0});
+  const byTreat={};appts.filter(a=>a.paid).forEach(a=>{
+    const items=a.items&&a.items.length?a.items:[{name:a.treatment||"Ohne Angabe",price:+a.price||0}],list=items.reduce((s,x)=>s+(+x.price||0),0);
+    const paid=Math.round((+a.price||0)*100);let rest=paid; // in Cent, damit die Summe genau aufgeht
+    items.forEach((x,i)=>{const c=i===items.length-1?rest:Math.round(list?paid*(+x.price||0)/list:paid/items.length);rest-=c;
+      const t=byTreat[x.name]||(byTreat[x.name]={n:0,sum:0});t.n++;t.sum+=c/100});
+  });
   // Gutscheine: Verkauf ist Einnahme, Einlösung nicht (sonst doppelt gezählt)
   const sold=ins.filter(e=>e.voucherId), redeemed=entries.filter(e=>e.kind==="redeem");
   const used=id=>S.entries.filter(e=>e.kind==="redeem"&&e.voucherId===id&&e.date<=to).reduce((s,e)=>s+(+e.amount||0),0);
