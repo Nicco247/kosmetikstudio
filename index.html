@@ -3,43 +3,51 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Mein Kosmetikstudio</title>
+<title>Auszeit</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Studio">
+<meta name="apple-mobile-web-app-title" content="Auszeit">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#F5F3F7">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1E2B" media="(prefers-color-scheme: dark)">
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Assistant:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: phone-first single column, sticky header, bottom tab bar; sheets slide up for forms */
+/* Layout: phone-first single column, sticky header, bottom tab bar; sheets slide up for forms.
+   Stil nach dem Flyer „Auszeit – Mira's Wellness“: weißes Papier, Gold-Schreibschrift, nachtblaue Welle mit Funkeln */
 :root{
-  --bg:#F5F3F7; --surface:#FFFFFF; --ink:#2A1F2D; --muted:#76697A; --line:#E4DEE7;
-  --accent:#A3355F; --accent-soft:#F6E3EB; --sage:#4F7F6D; --sage-soft:#E2EEE8; --warn:#B4621B; --warn-soft:#F8EADB;
-  --display:"Bodoni Moda",Didot,"Times New Roman",serif;
-  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --bg:#FBFAF7; --surface:#FFFFFF; --ink:#22374A; --muted:#7B8794; --line:#ECE5D8;
+  --accent:#1F5378; --accent-2:#2F739F; --accent-soft:#E4EEF5; --gold:#A57C3A; --gold-soft:#F4ECDD;
+  --sage:#3B7A80; --sage-soft:#E1EFEF; --warn:#B4621B; --warn-soft:#F8EADB;
+  --night-1:#16384F; --night-2:#2D6A8C; --on-night:#FFFFFF; --gold-on-night:#E6CB92;
+  --display:"Great Vibes","Snell Roundhand","Segoe Script",cursive;
+  --body:"Assistant","Segoe UI",system-ui,-apple-system,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#17121A; --surface:#221B25; --ink:#F1EAF3; --muted:#A99CAD; --line:#382E3C;
-  --accent:#E57FA6; --accent-soft:#3D2230; --sage:#8CC2AC; --sage-soft:#1F3029; --warn:#E9A464; --warn-soft:#3A2817; color-scheme:dark}}
+  --bg:#0E1E2B; --surface:#152A3B; --ink:#EEF3F7; --muted:#9CAAB6; --line:#233D52;
+  --accent:#86C0E4; --accent-2:#A9D3EE; --accent-soft:#1C3A50; --gold:#D8B675; --gold-soft:#2E2A20;
+  --sage:#8CC9C9; --sage-soft:#173434; --warn:#E9A464; --warn-soft:#3A2817;
+  --night-1:#0B2436; --night-2:#1F5272; --on-night:#FFFFFF; --gold-on-night:#E6CB92; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#17121A; --surface:#221B25; --ink:#F1EAF3; --muted:#A99CAD; --line:#382E3C;
-  --accent:#E57FA6; --accent-soft:#3D2230; --sage:#8CC2AC; --sage-soft:#1F3029; --warn:#E9A464; --warn-soft:#3A2817; color-scheme:dark}
+  --bg:#0E1E2B; --surface:#152A3B; --ink:#EEF3F7; --muted:#9CAAB6; --line:#233D52;
+  --accent:#86C0E4; --accent-2:#A9D3EE; --accent-soft:#1C3A50; --gold:#D8B675; --gold-soft:#2E2A20;
+  --sage:#8CC9C9; --sage-soft:#173434; --warn:#E9A464; --warn-soft:#3A2817;
+  --night-1:#0B2436; --night-2:#1F5272; --on-night:#FFFFFF; --gold-on-night:#E6CB92; color-scheme:dark}
 *{box-sizing:border-box}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0}
 img{max-width:100%}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 .wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 110px}
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 10px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-h1{font-family:var(--display);font-style:italic;font-weight:500;font-size:30px;margin:0;line-height:1.1;text-wrap:balance}
-h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;font-weight:600}
+h1{font-family:var(--display);font-weight:400;font-size:40px;margin:0;line-height:1.05;color:var(--gold);text-wrap:balance}
+h2{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:24px 0 8px;font-weight:700}
 .date{color:var(--muted);font-size:13px}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
@@ -61,7 +69,7 @@ h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 .empty{padding:18px 14px;color:var(--muted);font-size:14px}
 .empty b{color:var(--ink)}
 button,.btn{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:var(--surface);box-shadow:0 2px 10px rgb(31 83 120 / .18)}
 button.ghost{border-color:transparent;background:transparent;color:var(--accent);padding:6px 8px}
 button.sm{padding:5px 10px;font-size:13px}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -78,7 +86,7 @@ textarea{min-height:80px;resize:vertical}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
 .sheet-bg{position:fixed;inset:0;background:rgb(20 10 20 / .45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--surface);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.sheet h3{font-family:var(--display);font-style:italic;font-weight:500;font-size:24px;margin:0 0 14px}
+.sheet h3{font-family:var(--display);font-weight:400;font-size:34px;line-height:1.1;margin:0 0 12px;color:var(--gold)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .form{display:flex;flex-direction:column;gap:12px}
 .actions{display:flex;gap:8px;justify-content:space-between;margin-top:6px;flex-wrap:wrap}
@@ -97,7 +105,7 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu
 #gear{padding:6px 8px;border-color:transparent;background:transparent;color:var(--muted)}
 #gear svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
 .gate{display:flex;flex-direction:column;gap:12px;max-width:420px;margin:24px auto 0}
-.gate h2{font-family:var(--display);font-style:italic;text-transform:none;letter-spacing:0;font-size:26px;color:var(--ink);margin:0;font-weight:500}
+.gate h2{font-family:var(--display);text-transform:none;letter-spacing:0;font-size:36px;line-height:1.1;color:var(--gold);margin:0;font-weight:400}
 .gate p{margin:0}
 .wide{width:100%;justify-content:center;padding:12px}
 .gerr{color:var(--warn);font-weight:600;margin:0}
@@ -109,6 +117,17 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu
 .check input{width:20px;height:20px;flex:none;margin-top:1px}
 .menu{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .menu button{justify-content:flex-start;padding:12px;white-space:normal;text-align:left}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+.brand img{width:62px;height:62px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--gold)}
+.brand .script{font-family:var(--display);font-size:46px;line-height:1;color:var(--gold);display:block}
+.brand small{display:block;font-size:17px;color:var(--gold);letter-spacing:.02em;margin-top:2px}
+.hero{position:relative;border-radius:18px;overflow:hidden;color:var(--on-night);padding:22px 18px 30px;margin-top:4px;
+  background:radial-gradient(120% 90% at 70% 10%,var(--night-2),var(--night-1))}
+.hero svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero .greet{position:relative;padding-right:64px;font-family:var(--display);font-size:36px;line-height:1.1;color:var(--gold-on-night)}
+.hero .sub{position:relative;padding-right:64px;font-size:15px;opacity:.92;margin-top:4px}
+.hero img{position:absolute;right:14px;top:14px;width:52px;height:52px;border-radius:50%;object-fit:cover;opacity:.95;box-shadow:0 0 0 1.5px var(--gold-on-night)}
+.wave{display:block;width:100%;height:22px;margin:2px 0 0}
 @media print{body *{visibility:hidden}#rkprint,#rkprint *{visibility:visible}#rkprint{position:absolute;left:0;top:0;width:100%}}
 @media (max-width:380px){.kpi b{font-size:19px}nav button{font-size:10px}}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.6}}}
@@ -117,7 +136,7 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu
 <body>
 
 <div class="wrap">
-  <header><h1 id="title">Mein Kosmetikstudio</h1><div class="hr"><span id="sync"></span><button id="gear" aria-label="Einstellungen und Sicherungen" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></header>
+  <header><h1 id="title">Auszeit</h1><div class="hr"><span id="sync"></span><button id="gear" aria-label="Einstellungen und Sicherungen" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></header>
   <main id="view"><div class="empty">Studio wird geladen …</div><noscript>Bitte JavaScript aktivieren.</noscript></main>
 </div>
 <button class="primary fab" id="fab" hidden></button>
@@ -280,20 +299,28 @@ async function copy(t,btn){
   try{await navigator.clipboard.writeText(t);toast("Text kopiert – jetzt in WhatsApp einfügen")}
   catch{sheet("Text zum Kopieren",'<textarea id="ct" readonly>'+esc(t)+'</textarea><p class="note">Text lange antippen und kopieren.</p>',el=>{const x=el.querySelector("#ct");x.focus();x.select()})}
 }
-const STD=[["Klassische Gesichtsbehandlung",75,69],["Ausreinigung",45,45],["Hydrafacial / Feuchtigkeitsbehandlung",60,89],["Augenbrauen zupfen & färben",20,22],["Wimpern färben",15,15],["Lash Lifting",60,59],["Waxing Oberlippe",10,9],["Waxing Beine komplett",45,45],["Maniküre",45,32],["Fußpflege (kosmetisch)",50,38]];
-async function stdPrices(){for(const [name,duration,price] of STD)await save("treatments",{name,duration,price});toast("Preisliste übernommen – Preise bitte anpassen")}
+// Preise von miraswellness.de (Stand Nov. 2026); Dauer ohne Angabe auf der Webseite ist geschätzt
+const STD=[["Gesicht · BASIC",50,62],["Gesicht · CLASSIC",80,82],["Gesicht · Augenbrauen zupfen",10,8],["Gesicht · Brauen färben",10,10],["Gesicht · Wimpern färben",15,10],["Gesicht · Wimpern & Brauen färben",20,17],
+ ["Wimpern · Wimpernlifting",45,40],["Wimpern · Wimpernlifting mit Färben",55,48],
+ ["Pediküre · Basic",45,30],["Pediküre · Basic mit Lack",50,32],["Pediküre · mit Shellac",60,45],["Pediküre · Wellness-Fußpflege inkl. Fußmassage",60,38],
+ ["Maniküre · Basic",30,25],["Maniküre · Basic mit Lack",40,28],["Maniküre · mit Shellac",50,40],["Maniküre · Wellness inkl. Hand-Massage/Peeling",45,32],
+ ["Warmwachs · Achseln",15,15],["Warmwachs · Unterschenkel",25,20],["Warmwachs · Oberschenkel",25,20],["Warmwachs · Unter- & Oberschenkel",45,35],["Warmwachs · Arme",25,20],["Warmwachs · Gesicht",15,15],["Warmwachs · Rücken/Brust",30,30],
+ ["Massage · Rücken",25,32],["Massage · Kopf/Nacken",25,32],["Massage · Ganzkörper",50,58],["Massage · Vital (Rücken, Kopf/Nacken, Füße)",40,45],["Massage · Sport (Rücken, Beine)",40,45],
+ ["Hot Stone · Rücken",25,38],["Hot Stone · Kopf/Nacken",25,38],["Hot Stone · Ganzkörper",55,65]];
+async function stdPrices(){for(const [name,duration,price] of STD)await save("treatments",{name,duration,price});toast("Preisliste von miraswellness.de übernommen")}
 const IDEAS=[
  ["Instagram","Hautdetail ohne Gesicht","Nahaufnahme nach der Ausreinigung: so strahlt Haut nach 60 Minuten. Termine für diese Woche sind noch frei! #kosmetik #hautpflege #glowingskin"],
  ["Instagram Story","Freie Termine","Kurzfristig frei: Donnerstag 14 Uhr und Freitag 10 Uhr. Einfach per Nachricht buchen! #kosmetikstudio #freietermine #beauty"],
  ["Instagram","Wintertipp für trockene Haut","Heizungsluft trocknet die Haut aus. Mein Tipp: reichhaltigere Creme am Abend und viel trinken. #wintercare #trockenehaut #hautpflege"],
  ["Instagram","Hinter den Kulissen","So sieht meine Kabine aus, bevor du kommst: frisch, ruhig, vorbereitet. Wohlfühlen beginnt hier. #behindthescenes #kosmetikerin #selbststaendig"],
  ["Facebook","Gutschein-Erinnerung","Noch kein Geschenk? Ein Gutschein für eine Gesichtsbehandlung kommt immer an. Ab sofort im Studio erhältlich. #gutschein #geschenkidee #wellness"],
- ["Instagram","Wimpern: warum Abstand wichtig ist","Zu frühes Lash Lifting schadet den Wimpern. Ich empfehle 6–8 Wochen Pause, damit sie gesund bleiben. #lashlifting #wimpern #lashcare"],
+ ["Instagram","Wimpern: warum Abstand wichtig ist","Zu frühes Wimpernlifting schadet den Wimpern. Ich empfehle 6–8 Wochen Pause, damit sie gesund bleiben. #lashlifting #wimpern #lashcare"],
  ["Instagram","Produkt der Woche","Mein Lieblingsprodukt gerade: [Produkt]. Warum? Es beruhigt gestresste Haut sofort. Gibt’s bei mir im Studio. #produkttipp #skincare #kosmetik"],
  ["Google-Profil","Um Bewertung bitten","Danke an alle, die mir vertrauen! Wenn du zufrieden warst, freue ich mich über eine kurze Google-Bewertung. #danke #kundenliebe #kosmetikstudio"],
  ["TikTok","10 Sekunden Augenbrauen","Vorher und nachher Augenbrauen zupfen & färben, im Zeitraffer. Wer will auch? #brows #augenbrauen #beforeafter"],
  ["Instagram Story","Umfrage","Was wünschst du dir als Nächstes: Fußpflege-Tipps oder Hautpflege im Winter? Abstimmen! #umfrage #kosmetik #community"],
- ["Instagram","Persönlich: wer ich bin","Hi, ich bin [Name]! Seit [Jahr] Kosmetikerin aus Leidenschaft. Das liebe ich an meinem Beruf … #kosmetikerin #über mich #selbstständig"],
+ ["Instagram","Hot Stone im Winter","Wenn es draußen kalt wird: Hot-Stone-Massage wärmt bis tief in die Muskeln. Jetzt deine Auszeit buchen. #hotstone #massage #auszeit"],
+ ["Instagram","Persönlich: wer ich bin","Hi, ich bin Mira! Staatlich anerkannte Kosmetikerin und CIDESCO Beauty- & SPA-Therapistin. Das liebe ich an meinem Beruf … #kosmetikerin #über mich #selbstständig"],
  ["Facebook","Fußpflege im Winter","Auch wenn die Füße jetzt in Socken stecken: Pflege lohnt sich gerade im Winter. Jetzt Termin sichern. #fusspflege #pediküre #winterpflege"],
  ["Instagram","Mythos-Check","Mythos: Fettige Haut braucht keine Feuchtigkeit. Falsch! Warum, erkläre ich hier. #hautmythen #fettigehaut #skincaretips"],
  ["WhatsApp Status","Last-Minute-Termin","Heute 16 Uhr ist noch etwas frei. Wer zuerst schreibt, bekommt den Termin! #lastminute #kosmetik"],
@@ -301,6 +328,17 @@ const IDEAS=[
  ["Instagram Story","Mein Arbeitstag","Ein Tag im Studio: Kaffee, Kabine vorbereiten, erste Kundin um 9. Kommt mit! #dayinmylife #kosmetikerin #studioalltag"]
 ].map(([platform,title,caption])=>({platform,title,caption}));
 const pickIdeas=()=>IDEAS.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).slice(0,4).map(x=>x[1]);
+
+// Goldene Doppellinie wie auf dem Flyer
+const WAVE='<svg class="wave" viewBox="0 0 400 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 C90 2 200 24 400 8" fill="none" style="stroke:var(--gold)" stroke-width="1.3" vector-effect="non-scaling-stroke"/><path d="M0 18 C110 6 210 26 400 12" fill="none" style="stroke:var(--gold)" stroke-width=".8" opacity=".7" vector-effect="non-scaling-stroke"/></svg>';
+function heroHTML(){
+  const hr=new Date().getHours(), greet=hr<11?"Guten Morgen, Mira":hr<18?"Hallo Mira":"Guten Abend, Mira";
+  let r=11,sp="";const nx=()=>(r=(r*9301+49297)%233280)/233280;
+  for(let i=0;i<42;i++){const x=nx()*100,y=nx()*78,z=.4+nx()*1.5;sp+='<circle cx="'+x.toFixed(1)+'%" cy="'+y.toFixed(1)+'%" r="'+z.toFixed(2)+'" fill="#fff" opacity="'+(.3+z/3).toFixed(2)+'"/>'}
+  return '<div class="hero"><svg aria-hidden="true">'+sp+'</svg>'+
+    '<svg viewBox="0 0 400 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 84 C110 66 230 100 400 74 L400 100 L0 100Z" style="fill:var(--bg)"/><path d="M0 80 C110 62 230 96 400 70" fill="none" style="stroke:var(--gold-on-night)" stroke-width="1.4" vector-effect="non-scaling-stroke"/><path d="M0 76 C120 60 240 92 400 66" fill="none" style="stroke:var(--gold-on-night)" stroke-width=".8" opacity=".7" vector-effect="non-scaling-stroke"/></svg>'+
+    '<img src="icon.png" alt=""><div class="greet">'+greet+'</div><div class="sub">'+fdate(today(),{weekday:"long",day:"numeric",month:"long"})+'</div></div>';
+}
 
 // ---------- views ----------
 const rowAppt=(a,btns="")=>'<div class="row tap" data-act="appt" data-id="'+a.id+'"><span class="time">'+esc(a.time)+'</span><div class="main"><div class="t">'+esc(a.clientName||"?")+'</div><div class="s">'+esc(a.treatment||"")+(a.note?" · "+esc(a.note):"")+'</div></div>'+btns+'</div>';
@@ -312,11 +350,11 @@ function vHeute(){
   const td=apptsOn(today()),tm=apptsOn(today(1));
   const bdays=S.clients.filter(c=>c.birthday&&[0,1,2,3,4,5,6].some(i=>today(i).slice(5)===c.birthday.slice(5)));
   const nextPost=S.posts.filter(p=>!p.done&&p.date>=today()).sort((a,b)=>a.date.localeCompare(b.date))[0];
-  let h='<p class="date">'+fdate(today(),{weekday:"long",day:"numeric",month:"long"})+'</p><div class="kpis"><div class="kpi"><b>'+td.length+'</b><span>Termine heute</span></div><div class="kpi"><b>'+eur(monthIn(today().slice(0,7))).replace(",00","")+'</b><span>Einnahmen '+fdate(today(),{month:"long"})+'</span></div><div class="kpi"><b>'+low().length+'</b><span>nachbestellen</span></div></div>';
+  let h=heroHTML()+'<div class="kpis" style="margin-top:12px"><div class="kpi"><b>'+td.length+'</b><span>Termine heute</span></div><div class="kpi"><b>'+eur(monthIn(today().slice(0,7))).replace(",00","")+'</b><span>Einnahmen '+fdate(today(),{month:"long"})+'</span></div><div class="kpi"><b>'+low().length+'</b><span>nachbestellen</span></div></div>';
   if(mode==="local")h+='<div class="card" style="margin-top:16px;border-color:var(--warn)"><p><b>Nur auf diesem Gerät gespeichert</b></p><p class="note">Zum Testen okay. Für echte Daten bitte mit OneDrive verbinden – dann gibt es automatische Sicherungen.</p><div class="actions"><span></span><button data-act="settings">Einstellungen</button></div></div>';
   else if(syncMsg.startsWith("⚠"))h+='<div class="card" style="margin-top:16px;border-color:var(--warn)"><p><b>'+esc(syncMsg.slice(2))+'</b></p><p class="note">Deine Änderungen sind auf diesem Gerät gesichert und werden nachgeholt.</p><div class="actions"><span></span>'+(syncMsg.includes("anmelden")?'<button class="primary" data-act="relogin">Bei Microsoft anmelden</button>':'<button data-act="retry">Nochmal versuchen</button>')+'</div></div>';
   if(bioOffer)h+='<div class="card" style="margin-top:16px"><p><b>Schneller entsperren?</b></p><p class="note">Mit Face ID, Fingerabdruck oder Windows Hello statt Passwort – auf diesem Gerät.</p><div class="actions"><button class="ghost" data-act="bionot">Nein danke</button><button class="primary" data-act="bioyes">Einschalten</button></div></div>';
-  if(!S.treatments.length&&!S.clients.length)h+='<div class="card" style="margin-top:16px"><p><b>Willkommen!</b> So geht’s los:</p><p class="note">1. Preisliste anlegen (oder Vorschlag übernehmen)<br>2. Kundinnen eintragen<br>3. Termine anlegen – dann siehst du hier deinen Tag, Erinnerungen und Geburtstage.</p><div class="actions"><button class="primary" data-act="std">Preisliste-Vorschlag übernehmen</button></div></div>';
+  if(!S.treatments.length&&!S.clients.length)h+='<div class="card" style="margin-top:16px"><p><b>Willkommen!</b> So geht’s los:</p><p class="note">1. Preisliste übernehmen (alle Leistungen von miraswellness.de, jederzeit änderbar)<br>2. Kundinnen eintragen<br>3. Termine anlegen – dann siehst du hier deinen Tag, Erinnerungen und Geburtstage.</p><div class="actions"><button class="primary" data-act="std">Preisliste von der Webseite übernehmen</button></div></div>';
   h+='<h2>Heute</h2>'+(td.length?'<div class="list">'+td.map(a=>rowAppt(a,a.paid?'<span class="pill ok">bezahlt</span>':'<button class="sm" data-act="pay" data-id="'+a.id+'">'+eur(a.price)+' kassieren</button>')).join("")+'</div>':'<div class="list"><div class="empty">Heute keine Termine. Neue Termine legst du mit <b>+ Termin</b> an.</div></div>');
   h+='<h2>Erinnerungen für morgen</h2>'+(tm.length?'<div class="list">'+tm.map(a=>{const c=byId("clients",a.clientId),ph=(c?.phone||"").replace(/[^\d+]/g,"").replace(/^0/,"+49").replace(/^\+/,"");
      return rowAppt(a,'<button class="sm" data-act="copy" data-id="'+a.id+'">Text kopieren</button>'+(ph?'<a class="btn sm" data-act="noop" target="_blank" rel="noopener" href="https://wa.me/'+ph+'?text='+encodeURIComponent(reminderText(a))+'">WhatsApp</a>':''))}).join("")+'</div>':'<div class="list"><div class="empty">Morgen keine Termine – nichts zu erinnern.</div></div>');
@@ -351,7 +389,7 @@ function vKasse(){
   let h='<div class="bar"><div class="month"><button class="sm" data-act="m-1" aria-label="Vormonat">‹</button><b>'+ml+'</b><button class="sm" data-act="m1" aria-label="Nächster Monat">›</button></div><button class="sm" data-act="csv">CSV für Steuerberater</button></div>';
   h+='<div class="kpis"><div class="kpi"><b>'+eur(inn)+'</b><span>Einnahmen</span></div><div class="kpi"><b>'+eur(out)+'</b><span>Ausgaben</span></div><div class="kpi"><b style="color:'+(inn-out>=0?"var(--sage)":"var(--warn)")+'">'+eur(inn-out)+'</b><span>Gewinn</span></div></div>';
   h+='<h2>Buchungen</h2><div class="list">'+(e.length?e.map(x=>'<div class="row tap" data-act="entry" data-id="'+x.id+'"><div class="main"><div class="t">'+esc(x.label)+'</div><div class="s">'+fdate(x.date,{day:"numeric",month:"short"})+' · '+esc(x.pay||"")+'</div></div><span class="num" style="color:'+(x.kind==="in"?"var(--sage)":"var(--warn)")+'">'+(x.kind==="in"?"+":"−")+eur(x.amount)+'</span></div>').join(""):'<div class="empty">Keine Buchungen in diesem Monat. Kassierte Termine und Produktverkäufe landen automatisch hier, Ausgaben trägst du mit <b>+ Buchung</b> ein.</div>')+'</div>';
-  h+='<div class="bar"><h2>Preisliste</h2><button class="sm" data-act="newtr">+ Behandlung</button></div><div class="list">'+(S.treatments.length?S.treatments.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(t=>'<div class="row tap" data-act="tr" data-id="'+t.id+'"><div class="main"><div class="t">'+esc(t.name)+'</div><div class="s">'+(+t.duration||0)+' Min.</div></div><span class="num">'+eur(t.price)+'</span></div>').join(""):'<div class="empty">Noch keine Preisliste. <button class="ghost" data-act="std">Vorschlag übernehmen</button></div>')+'</div>';
+  h+='<div class="bar"><h2>Preisliste</h2><button class="sm" data-act="newtr">+ Behandlung</button></div><div class="list">'+(S.treatments.length?S.treatments.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(t=>'<div class="row tap" data-act="tr" data-id="'+t.id+'"><div class="main"><div class="t">'+esc(t.name)+'</div><div class="s">'+(+t.duration||0)+' Min.</div></div><span class="num">'+eur(t.price)+'</span></div>').join(""):'<div class="empty">Noch keine Preisliste. <button class="ghost" data-act="std">Von der Webseite übernehmen</button></div>')+'</div>';
   h+='<h2>Datensicherung</h2><div class="card"><p>'+esc(syncMsg||"–")+'</p><p class="note">'+(mode==="cloud"?"Automatisch bei jeder Änderung: aktueller Stand, vorheriger Stand und jeden Morgen eine Tagessicherung in OneDrive – alles verschlüsselt.":"Nur auf diesem Gerät. Bitte mit OneDrive verbinden.")+'</p><div class="actions"><span></span><button data-act="settings">Sicherungen & Einstellungen</button></div></div>';
   return h;
 }
@@ -664,7 +702,7 @@ async function bioSecret(rawId){
   return new Uint8Array(r).slice(0,32);
 }
 async function bioSetup(){
-  const cred=await navigator.credentials.create({publicKey:{rp:{name:"Mein Kosmetikstudio"},user:{id:rand(16),name:"Kosmetikstudio",displayName:"Mein Kosmetikstudio"},challenge:rand(32),
+  const cred=await navigator.credentials.create({publicKey:{rp:{name:"Auszeit"},user:{id:rand(16),name:"Auszeit",displayName:"Auszeit – Mira’s Wellness"},challenge:rand(32),
     pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],timeout:60000,
     authenticatorSelection:{authenticatorAttachment:"platform",userVerification:"required",residentKey:"preferred"},extensions:{prf:{eval:{first:PRF_SALT}}}}});
   const ext=cred.getClientExtensionResults().prf;
@@ -677,10 +715,10 @@ async function bioUnlock(){const b=await kget("bio");return unseal(await rawKey(
 // ===== Startbildschirme =====
 let hdr=null, hasBio=false, bioOffer=false;
 function screen(html){
-  document.getElementById("title").textContent="Mein Kosmetikstudio";
+  document.getElementById("title").textContent="";
   document.getElementById("sync").textContent="";
   document.querySelector("nav").hidden=true;document.getElementById("fab").hidden=true;document.getElementById("gear").hidden=true;
-  document.getElementById("view").innerHTML='<div class="gate">'+html+'</div>';
+  document.getElementById("view").innerHTML='<div class="gate"><div class="brand"><img src="icon.png" alt=""><div><span class="script">Auszeit</span><small>Mira’s Wellness</small></div></div>'+WAVE+html+'</div>';
   document.querySelector("#view input")?.focus();
 }
 const pwField=(id,label,ac="current-password")=>'<label class="f" for="'+id+'">'+label+'<input id="'+id+'" type="password" autocomplete="'+ac+'" required minlength="8"></label>';
@@ -705,7 +743,7 @@ function sNew(){
 }
 function sRK(rk){
   screen('<h2>Dein Wiederherstellungsschlüssel</h2><p>Damit kommst du an deine Daten, falls du das Passwort vergisst. <b>Niemand sonst kann es zurücksetzen.</b> Drucke ihn aus oder schreib ihn ab und bewahre ihn sicher auf (z. B. bei den Geschäftsunterlagen).</p>'+
-    '<div id="rkprint" class="rk"><small>Mein Kosmetikstudio · Wiederherstellungsschlüssel · erstellt '+fdate(today(),{day:"numeric",month:"long",year:"numeric"})+'</small><b>'+rk+'</b></div>'+
+    '<div id="rkprint" class="rk"><small>Auszeit · Mira’s Wellness · Wiederherstellungsschlüssel · erstellt '+fdate(today(),{day:"numeric",month:"long",year:"numeric"})+'</small><b>'+rk+'</b></div>'+
     '<div class="actions"><button id="rkc">Kopieren</button><button id="rkp">Drucken</button></div>'+
     '<label class="check"><input type="checkbox" id="rkok"> Ich habe den Schlüssel sicher notiert oder ausgedruckt.</label><button class="primary wide" id="rkgo" disabled>Studio öffnen</button>');
   document.getElementById("rkc").onclick=()=>copy(rk);

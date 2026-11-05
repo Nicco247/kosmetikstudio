@@ -1,11 +1,11 @@
 {
-  "name": "Mein Kosmetikstudio",
-  "short_name": "Studio",
+  "name": "Auszeit – Mira’s Wellness",
+  "short_name": "Auszeit",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#F5F3F7",
-  "theme_color": "#F5F3F7",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
   "lang": "de",
   "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }]
 }
