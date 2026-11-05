@@ -8,35 +8,27 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Auszeit">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0E1E2B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#161513">
+<meta name="color-scheme" content="dark">
 <meta name="referrer" content="no-referrer">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Assistant:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Alex+Brush&family=Assistant:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: phone-first single column, sticky header, bottom tab bar; sheets slide up for forms.
-   Stil nach dem Flyer „Auszeit – Mira's Wellness“: weißes Papier, Gold-Schreibschrift, nachtblaue Welle mit Funkeln */
+   Bewusst dunkel und edel: warmes Schwarz, Gold aus dem Logo, Hellblau der Schmetterlinge */
 :root{
-  --bg:#FBFAF7; --surface:#FFFFFF; --ink:#22374A; --muted:#7B8794; --line:#ECE5D8;
-  --accent:#1F5378; --accent-2:#2F739F; --accent-soft:#E4EEF5; --gold:#A57C3A; --gold-soft:#F4ECDD;
-  --sage:#3B7A80; --sage-soft:#E1EFEF; --warn:#B4621B; --warn-soft:#F8EADB;
-  --night-1:#16384F; --night-2:#2D6A8C; --on-night:#FFFFFF; --gold-on-night:#E6CB92;
+  color-scheme:dark;
+  --bg:#161513; --surface:#201E1B; --paper:#1C1A17; --ink:#F2EDE4; --muted:#A79F93; --line:#35312A;
+  --accent:#8FC4E6; --accent-2:#B7DBF1; --accent-soft:#1D2D38; --gold:#D3B171; --gold-2:#E8CF96; --gold-soft:#2D271C;
+  --sage:#8FCBB9; --sage-soft:#1B2D27; --warn:#EBA868; --warn-soft:#372717;
+  --sky-1:#B9DDF2; --sky-2:#6FA9D1; --on-sky:#FFFFFF;
+  --brand-font:"Alex Brush","Great Vibes",cursive;
   --display:"Great Vibes","Snell Roundhand","Segoe Script",cursive;
   --body:"Assistant","Segoe UI",system-ui,-apple-system,sans-serif;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0E1E2B; --surface:#152A3B; --ink:#EEF3F7; --muted:#9CAAB6; --line:#233D52;
-  --accent:#86C0E4; --accent-2:#A9D3EE; --accent-soft:#1C3A50; --gold:#D8B675; --gold-soft:#2E2A20;
-  --sage:#8CC9C9; --sage-soft:#173434; --warn:#E9A464; --warn-soft:#3A2817;
-  --night-1:#0B2436; --night-2:#1F5272; --on-night:#FFFFFF; --gold-on-night:#E6CB92; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0E1E2B; --surface:#152A3B; --ink:#EEF3F7; --muted:#9CAAB6; --line:#233D52;
-  --accent:#86C0E4; --accent-2:#A9D3EE; --accent-soft:#1C3A50; --gold:#D8B675; --gold-soft:#2E2A20;
-  --sage:#8CC9C9; --sage-soft:#173434; --warn:#E9A464; --warn-soft:#3A2817;
-  --night-1:#0B2436; --night-2:#1F5272; --on-night:#FFFFFF; --gold-on-night:#E6CB92; color-scheme:dark}
 *{box-sizing:border-box}
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0}
@@ -50,7 +42,7 @@ h1{font-family:var(--display);font-weight:400;font-size:40px;margin:0;line-heigh
 h2{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:24px 0 8px;font-weight:700}
 .date{color:var(--muted);font-size:13px}
 .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
 .kpi b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
 .kpi span{font-size:12px;color:var(--muted)}
 .list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
@@ -69,7 +61,7 @@ h2{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--go
 .empty{padding:18px 14px;color:var(--muted);font-size:14px}
 .empty b{color:var(--ink)}
 button,.btn{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-button.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:var(--surface);box-shadow:0 2px 10px rgb(31 83 120 / .18)}
+button.primary{background:linear-gradient(135deg,var(--gold-2),var(--gold));border-color:transparent;color:#1B1915;box-shadow:0 2px 14px rgb(211 177 113 / .18);letter-spacing:.02em}
 button.ghost{border-color:transparent;background:transparent;color:var(--accent);padding:6px 8px}
 button.sm{padding:5px 10px;font-size:13px}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -80,11 +72,11 @@ nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);b
 nav .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
 nav button{border:0;border-radius:0;background:none;flex-direction:column;gap:2px;padding:8px 2px 10px;font-size:11px;font-weight:600;color:var(--muted)}
 nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-nav button[aria-current="page"]{color:var(--accent)}
+nav button[aria-current="page"]{color:var(--gold)}
 input,select,textarea{font:inherit;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 12px}
 textarea{min-height:80px;resize:vertical}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
-.sheet-bg{position:fixed;inset:0;background:rgb(20 10 20 / .45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet-bg{position:fixed;inset:0;background:rgb(0 0 0 / .6);z-index:20;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--surface);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .sheet h3{font-family:var(--display);font-weight:400;font-size:34px;line-height:1.1;margin:0 0 12px;color:var(--gold)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -95,7 +87,10 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu
 .note{font-size:13px;color:var(--muted)}
 .allergy{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:8px 10px;font-weight:600;font-size:14px}
 .status{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 80px);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:13px;z-index:30}
-.month{display:flex;align-items:center;gap:6px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 6px;margin-top:4px;scrollbar-width:none}
+.chip{border-radius:99px;padding:7px 13px;font-size:14px;font-weight:600;color:var(--muted);flex:none}
+.chip[aria-pressed="true"]{background:var(--gold-soft);border-color:var(--gold-2);color:var(--gold)}
+.period{font-size:15px}
 .big{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
 .tips li{margin-bottom:6px}
 .stepper{display:flex;align-items:center;gap:4px}
@@ -117,16 +112,18 @@ label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mu
 .check input{width:20px;height:20px;flex:none;margin-top:1px}
 .menu{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .menu button{justify-content:flex-start;padding:12px;white-space:normal;text-align:left}
-.brand{display:flex;align-items:center;gap:14px;margin-bottom:4px}
-.brand img{width:62px;height:62px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--gold)}
-.brand .script{font-family:var(--display);font-size:46px;line-height:1;color:var(--gold);display:block}
-.brand small{display:block;font-size:17px;color:var(--gold);letter-spacing:.02em;margin-top:2px}
-.hero{position:relative;border-radius:18px;overflow:hidden;color:var(--on-night);padding:22px 18px 30px;margin-top:4px;
-  background:radial-gradient(120% 90% at 70% 10%,var(--night-2),var(--night-1))}
-.hero svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.hero .greet{position:relative;padding-right:64px;font-family:var(--display);font-size:36px;line-height:1.1;color:var(--gold-on-night)}
-.hero .sub{position:relative;padding-right:64px;font-size:15px;opacity:.92;margin-top:4px}
-.hero img{position:absolute;right:14px;top:14px;width:52px;height:52px;border-radius:50%;object-fit:cover;opacity:.95;box-shadow:0 0 0 1.5px var(--gold-on-night)}
+.brand{display:flex;flex-direction:column;align-items:center;margin:10px 0 0;color:var(--gold)}
+.brand .wm{position:relative;padding-right:40px}
+.brand .bfly{position:absolute;right:-18px;top:-14px;width:68px;height:auto;transform:rotate(6deg);filter:drop-shadow(0 4px 10px rgb(0 0 0 / .35))}
+.brand .word{font-family:var(--brand-font);font-size:64px;line-height:1.1;background:linear-gradient(180deg,var(--gold-2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;padding:0 .15em}
+.brand .sub{font-family:var(--body);font-size:15px;letter-spacing:.32em;text-transform:uppercase;margin-top:2px;padding-left:.32em}
+.hero{position:relative;overflow:hidden;color:var(--on-sky);padding:30px 18px 40px;margin:4px calc(-1*max(16px,env(safe-area-inset-left,0px))) 0;
+  background:radial-gradient(90% 120% at 55% 45%,var(--sky-1),var(--sky-2))}
+.hero svg{position:absolute;left:0;width:100%;height:28px;pointer-events:none}
+.hero svg.top{top:0}.hero svg.bot{bottom:0}
+.hero .greet{position:relative;font-family:var(--display);font-size:40px;line-height:1.1;text-shadow:0 1px 10px rgb(25 70 105 / .45);padding-right:70px}
+.hero .sub{position:relative;text-shadow:0 1px 6px rgb(25 70 105 / .45);font-size:16px;letter-spacing:.02em;margin-top:2px;padding-right:70px}
+.hero img{position:absolute;right:max(14px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-52%) rotate(8deg);width:74px;height:auto;filter:drop-shadow(0 3px 8px rgb(20 50 80 / .35))}
 .wave{display:block;width:100%;height:22px;margin:2px 0 0}
 @media print{body *{visibility:hidden}#rkprint,#rkprint *{visibility:visible}#rkprint{position:absolute;left:0;top:0;width:100%}}
 @media (max-width:380px){.kpi b{font-size:19px}nav button{font-size:10px}}
@@ -152,12 +149,12 @@ const TABS=[
  ["lager","Lager",'<path d="M9 3h6v4l2 3v10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V10l2-3z"/><path d="M9 7h6"/>'],
  ["social","Social",'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6"/>']
 ];
-const KEYS=["clients","appts","treatments","products","entries","posts"];
+const KEYS=["clients","appts","treatments","products","entries","posts","vouchers"];
 const S=Object.fromEntries(KEYS.map(k=>[k,[]]));
 // Nach der Microsoft-Registrierung hier die Anwendungs-ID (Client-ID) eintragen, siehe Anleitung Schritt 2
 const CLIENT_ID="5d63bae8-e8e0-4f45-83f9-32723337fb8c";
 let ready=false, ideas=[];
-let tab="heute", day=today(), month=today().slice(0,7), q="";
+let tab="heute", day=today(), q="", rk="month", rFrom=today(-7), rTo=today();
 
 // ---------- helpers ----------
 function today(d=0){const t=new Date();t.setDate(t.getDate()+d);return iso(t)}
@@ -232,9 +229,11 @@ function editAppt(a={}){
     {k:"treatment",label:"Behandlung",type:"select",opts:[["","– Behandlung wählen –"],...tr.map(t=>[t.name,t.name+" · "+t.duration+" Min."])]},
     {k:"price",label:"Preis (€)",type:"number",half:1},{k:"note",label:"Notiz",half:1}
   ],a,o=>{o.clientName=byId("clients",o.clientId)?.name||"";if(!o.clientId){toast("Bitte eine Kundin wählen");return}save("appts",o);
-    const e=entryFor(o.id);if(e)save("entries",{...e,amount:+o.price||0,date:o.date,label:(o.treatment||"Behandlung")+" – "+o.clientName});
+    const linked=S.entries.filter(e=>o.id&&e.apptId===o.id);
+    if(linked.length===1&&linked[0].kind==="in")save("entries",{...linked[0],amount:+o.price||0,date:o.date,label:(o.treatment||"Behandlung")+" – "+o.clientName});
+    else if(linked.length&&+o.price!==+a.price)toast("Mit Gutschein bezahlt – Betrag bitte in der Kasse prüfen",4500);
     toast("Termin gespeichert")},
-   a.id&&(()=>{del("appts",a.id);const e=entryFor(a.id);if(e)del("entries",e.id);toast("Termin gelöscht")}),
+   a.id&&(()=>{del("appts",a.id);S.entries.filter(e=>e.apptId===a.id).forEach(e=>del("entries",e.id));toast("Termin gelöscht")}),
    a.paid?'<p class="note">Bereits kassiert – ein geänderter Preis wird in der Kasse mit angepasst.</p>':'',"Termin löschen (Absage / zu früh)");
   const t=el.querySelector("#f_treatment"),p=el.querySelector("#f_price");
   t.onchange=()=>{const x=tr.find(x=>x.name===t.value);if(x)p.value=x.price};
@@ -273,17 +272,64 @@ function showClient(c){
 
 // ---------- actions ----------
 const entryFor=apptId=>apptId&&S.entries.find(e=>e.apptId===apptId);
+const PAYS=["bar","Karte","Überweisung","PayPal"];
 function checkout(a){
-  form("Kassieren · "+(a.clientName||""),[
+  const open=S.vouchers.filter(v=>voucherRest(v)>0.004).sort((x,y)=>String(x.no).localeCompare(String(y.no)));
+  const el=form("Kassieren · "+(a.clientName||""),[
     {k:"price",label:"Preis heute (€) – bei Bedarf anpassen",type:"number"},
-    {k:"pay",label:"Zahlart",type:"select",opts:["bar","Karte","Überweisung","PayPal","Gutschein"]}
+    {k:"pay",label:"Zahlart",type:"select",opts:[...PAYS,"Gutschein"]},
+    {k:"voucherId",label:"Welcher Gutschein?",type:"select",opts:[["","– Gutschein wählen –"],...open.map(v=>[v.id,v.no+" · "+(v.forName||v.buyer||"")+" · Rest "+eur(voucherRest(v))])]},
+    {k:"restPay",label:"Restbetrag bezahlt mit",type:"select",opts:PAYS}
   ],{...a,pay:"bar"},async o=>{
-    const {pay,...appt}=o;
+    const price=+o.price||0,label=(a.treatment||"Behandlung")+" – "+(a.clientName||"");
+    if(o.pay==="Gutschein"&&!byId("vouchers",o.voucherId)){toast("Bitte einen Gutschein auswählen");return}
+    const {pay,voucherId,restPay,...appt}=o;
     await save("appts",{...appt,paid:true});
-    const e=entryFor(a.id);
-    await save("entries",{...(e||{}),kind:"in",date:a.date,label:(a.treatment||"Behandlung")+" – "+(a.clientName||""),amount:+o.price||0,pay,apptId:a.id});
-    toast(eur(o.price)+" kassiert");
+    for(const e of S.entries.filter(e=>e.apptId===a.id))await del("entries",e.id);
+    if(pay==="Gutschein"){
+      const v=byId("vouchers",voucherId),use=Math.min(voucherRest(v),price);
+      // Einlösung ist kein neues Geld: eigene Buchungsart, zählt nicht zu den Einnahmen
+      await save("entries",{kind:"redeem",date:a.date,label:"Gutschein "+v.no+" eingelöst – "+label,amount:Math.round(use*100)/100,pay:"Gutschein",apptId:a.id,voucherId:v.id});
+      const rest=Math.round((price-use)*100)/100;
+      if(rest>0)await save("entries",{kind:"in",date:a.date,label:label+" (Rest zum Gutschein)",amount:rest,pay:restPay,apptId:a.id});
+      toast(eur(use)+" vom Gutschein"+(rest>0?" + "+eur(rest)+" "+restPay:""),4500);
+    }else{
+      await save("entries",{kind:"in",date:a.date,label,amount:price,pay,apptId:a.id});
+      toast(eur(price)+" kassiert");
+    }
   },null,'<p class="note">'+esc(a.treatment||"")+' · Listenpreis '+eur(a.price)+'</p>');
+  const pay=el.querySelector("#f_pay"),vs=el.querySelector("#f_voucherId").closest("label"),rp=el.querySelector("#f_restPay").closest("label");
+  const sync=()=>{const g=pay.value==="Gutschein";vs.hidden=!g;rp.hidden=!g;if(g&&!open.length)vs.insertAdjacentHTML("afterend",'<span class="note" id="nov">Kein offener Gutschein. Verkaufte Gutscheine trägst du in der Kasse ein.</span>');else el.querySelector("#nov")?.remove()};
+  pay.onchange=sync;sync();
+}
+// ---------- Gutscheine ----------
+const voucherRest=v=>Math.round(((+v.amount||0)-S.entries.filter(e=>e.kind==="redeem"&&e.voucherId===v.id).reduce((s,e)=>s+(+e.amount||0),0))*100)/100;
+function nextVoucherNo(){const y=new Date().getFullYear(),n=S.vouchers.filter(v=>String(v.no).startsWith("G"+y+"-")).length+1;return "G"+y+"-"+String(n).padStart(3,"0")}
+function editVoucher(v={}){
+  const y=new Date().getFullYear();
+  form(v.id?"Gutschein bearbeiten":"Gutschein verkaufen",[
+    {k:"no",label:"Gutschein-Nr.",def:nextVoucherNo(),half:1},{k:"date",label:"Verkauft am",type:"date",def:today(),half:1},
+    {k:"buyer",label:"Gekauft von",req:1},{k:"forName",label:"Für (beschenkte Person, optional)"},
+    {k:"amount",label:"Wert (€)",type:"number",req:1,half:1},{k:"pay",label:"Bezahlt mit",type:"select",opts:PAYS,half:1},
+    {k:"validUntil",label:"Gültig bis",type:"date",def:(y+3)+"-12-31"},{k:"note",label:"Notiz (z. B. für welche Behandlung)"}
+  ],v,async o=>{
+    if(!(+o.amount>0)){toast("Bitte einen Wert eintragen");return}
+    if(!o.id)o.id=crypto.randomUUID?crypto.randomUUID():b64url(rand(12));
+    await save("vouchers",o);
+    const sale=S.entries.find(e=>e.kind==="in"&&e.voucherId===o.id);
+    await save("entries",{...(sale||{}),kind:"in",date:o.date,label:"Gutschein "+o.no+" verkauft – "+o.buyer,amount:+o.amount,pay:o.pay,voucherId:o.id});
+    toast(v.id?"Gutschein gespeichert":"Gutschein "+o.no+" verkauft – "+eur(o.amount)+" als Einnahme gebucht",4500);
+  },v.id&&(()=>{del("vouchers",v.id);S.entries.filter(e=>e.voucherId===v.id&&e.kind==="in").forEach(e=>del("entries",e.id));toast("Gutschein gelöscht")}),
+  v.id?'':'<p class="note">Der Betrag wird heute als Einnahme gebucht. Beim späteren Einlösen zählt er nicht noch einmal.</p>',"Gutschein löschen");
+}
+function showVoucher(v){
+  const uses=S.entries.filter(e=>e.kind==="redeem"&&e.voucherId===v.id).sort((a,b)=>a.date.localeCompare(b.date)),rest=voucherRest(v);
+  const expired=v.validUntil&&v.validUntil<today()&&rest>0;
+  sheet("Gutschein "+v.no,
+    '<div class="card"><p>Wert <b>'+eur(v.amount)+'</b> · Rest <b style="color:'+(rest>0?'var(--gold)':'var(--muted)')+'">'+eur(rest)+'</b></p><p class="note">Verkauft am '+fdate(v.date,{day:"numeric",month:"long",year:"numeric"})+' an '+esc(v.buyer||"")+(v.forName?' · für '+esc(v.forName):'')+' · '+esc(v.pay||"")+(v.validUntil?'<br>Gültig bis '+fdate(v.validUntil,{day:"numeric",month:"long",year:"numeric"}):'')+(v.note?'<br>'+esc(v.note):'')+'</p>'+(expired?'<p class="gerr">Abgelaufen</p>':'')+'</div>'+
+    '<h2>Eingelöst ('+uses.length+')</h2>'+(uses.length?'<div class="list">'+uses.map(e=>'<div class="row"><div class="main"><div class="t">'+esc(e.label.replace(/^Gutschein \S+ eingelöst – /,""))+'</div><div class="s">'+fdate(e.date,{day:"numeric",month:"short",year:"numeric"})+'</div></div><span class="num">'+eur(e.amount)+'</span></div>').join("")+'</div>':'<div class="empty">Noch nicht eingelöst. Beim Kassieren „Gutschein“ als Zahlart wählen.</div>')+
+    '<div class="actions" style="margin-top:14px"><span></span><button id="vedit">Bearbeiten</button></div>',
+    el=>el.querySelector("#vedit").onclick=()=>editVoucher(v));
 }
 async function sell(p){
   if((+p.stock||0)<=0){toast("Nicht mehr auf Lager");return}
@@ -329,15 +375,27 @@ const IDEAS=[
 ].map(([platform,title,caption])=>({platform,title,caption}));
 const pickIdeas=()=>IDEAS.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).slice(0,4).map(x=>x[1]);
 
+// Schmetterling aus dem Flyer-Motiv, freigestellt
+const BUTTERFLY="data:image/webp;base64,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";
 // Goldene Doppellinie wie auf dem Flyer
 const WAVE='<svg class="wave" viewBox="0 0 400 22" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 C90 2 200 24 400 8" fill="none" style="stroke:var(--gold)" stroke-width="1.3" vector-effect="non-scaling-stroke"/><path d="M0 18 C110 6 210 26 400 12" fill="none" style="stroke:var(--gold)" stroke-width=".8" opacity=".7" vector-effect="non-scaling-stroke"/></svg>';
 function heroHTML(){
   const hr=new Date().getHours(), greet=hr<11?"Guten Morgen, Mira":hr<18?"Hallo Mira":"Guten Abend, Mira";
-  let r=11,sp="";const nx=()=>(r=(r*9301+49297)%233280)/233280;
-  for(let i=0;i<42;i++){const x=nx()*100,y=nx()*78,z=.4+nx()*1.5;sp+='<circle cx="'+x.toFixed(1)+'%" cy="'+y.toFixed(1)+'%" r="'+z.toFixed(2)+'" fill="#fff" opacity="'+(.3+z/3).toFixed(2)+'"/>'}
-  return '<div class="hero"><svg aria-hidden="true">'+sp+'</svg>'+
-    '<svg viewBox="0 0 400 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 84 C110 66 230 100 400 74 L400 100 L0 100Z" style="fill:var(--bg)"/><path d="M0 80 C110 62 230 96 400 70" fill="none" style="stroke:var(--gold-on-night)" stroke-width="1.4" vector-effect="non-scaling-stroke"/><path d="M0 76 C120 60 240 92 400 66" fill="none" style="stroke:var(--gold-on-night)" stroke-width=".8" opacity=".7" vector-effect="non-scaling-stroke"/></svg>'+
-    '<img src="icon.png" alt=""><div class="greet">'+greet+'</div><div class="sub">'+fdate(today(),{weekday:"long",day:"numeric",month:"long"})+'</div></div>';
+  return '<div class="hero"><svg class="top" viewBox="0 0 400 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 L400 0 L400 12 C260 26 140 0 0 16Z" style="fill:var(--bg)"/><path d="M0 18 C140 2 260 28 400 14" fill="none" style="stroke:var(--gold-2)" stroke-width="1.4" vector-effect="non-scaling-stroke"/><path d="M0 13 C140 -2 260 24 400 9" fill="none" style="stroke:var(--gold-2)" stroke-width=".8" vector-effect="non-scaling-stroke"/></svg><svg class="bot" viewBox="0 0 400 28" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14 C110 0 240 30 400 10 L400 28 L0 28Z" style="fill:var(--bg)"/><path d="M0 12 C110 -2 240 28 400 8" fill="none" style="stroke:var(--gold-2)" stroke-width="1.4" vector-effect="non-scaling-stroke"/><path d="M0 17 C120 3 250 32 400 13" fill="none" style="stroke:var(--gold-2)" stroke-width=".8" vector-effect="non-scaling-stroke"/></svg><img src="'+BUTTERFLY+'" alt=""><div class="greet">'+greet+'</div><div class="sub">'+fdate(today(),{weekday:"long",day:"numeric",month:"long"})+'</div></div>';
+}
+
+const RANGES=[["week","Diese Woche"],["lastweek","Letzte Woche"],["month","Dieser Monat"],["lastmonth","Letzter Monat"],["year","Dieses Jahr"],["custom","Von – bis"]];
+function rangeOf(){
+  const d=new Date(),dow=(d.getDay()+6)%7,y=d.getFullYear(),m=d.getMonth(),first=(Y,M)=>iso(new Date(Y,M,1)),last=(Y,M)=>iso(new Date(Y,M+1,0));
+  return {week:[today(-dow),today(6-dow)],lastweek:[today(-dow-7),today(-dow-1)],month:[first(y,m),last(y,m)],lastmonth:[first(y,m-1),last(y,m-1)],year:[y+"-01-01",y+"-12-31"],
+    custom:rFrom<=rTo?[rFrom,rTo]:[rTo,rFrom]}[rk];
+}
+const dlong=d=>fdate(d,{day:"numeric",month:"short",year:"numeric"});
+function exportExcel(){
+  const [from,to]=rangeOf(),R=periodReport(S,from,to);
+  const data=buildXlsx(reportSheets(R,id=>byId("appts",id),d=>fdate(d,{day:"2-digit",month:"2-digit",year:"numeric"}),id=>byId("vouchers",id)));
+  dlFile("Auszeit_"+from+"_bis_"+to+".xlsx",data,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  const n=R.entries.filter(e=>e.kind==="in").length;toast("Excel-Datei gespeichert ("+n+(n===1?" Einnahme":" Einnahmen")+")",4000);
 }
 
 // ---------- views ----------
@@ -383,12 +441,18 @@ function vKunden(){
    (S.clients.length?'<p class="note">„Wo.“ = seit so vielen Wochen nicht mehr da – gute Gelegenheit, sich zu melden.</p>':'');
 }
 function vKasse(){
-  const e=S.entries.filter(x=>(x.date||"").startsWith(month)).sort((a,b)=>b.date.localeCompare(a.date));
-  const inn=e.filter(x=>x.kind==="in").reduce((s,x)=>s+(+x.amount||0),0),out=e.filter(x=>x.kind==="out").reduce((s,x)=>s+(+x.amount||0),0);
-  const ml=new Date(month+"-15").toLocaleDateString("de-DE",{month:"long",year:"numeric"});
-  let h='<div class="bar"><div class="month"><button class="sm" data-act="m-1" aria-label="Vormonat">‹</button><b>'+ml+'</b><button class="sm" data-act="m1" aria-label="Nächster Monat">›</button></div><button class="sm" data-act="csv">CSV für Steuerberater</button></div>';
+  const [from,to]=rangeOf(),R=periodReport(S,from,to),e=R.entries.slice().reverse(),inn=R.income,out=R.expense;
+  let h='<div class="chips" role="group" aria-label="Zeitraum">'+RANGES.map(([k,l])=>'<button class="chip" data-act="rk" data-k="'+k+'" aria-pressed="'+(rk===k)+'">'+l+'</button>').join("")+'</div>';
+  if(rk==="custom")h+='<div class="grid2" style="margin-top:10px"><label class="f" for="rf">Von<input type="date" id="rf" value="'+rFrom+'"></label><label class="f" for="rt">Bis<input type="date" id="rt" value="'+rTo+'"></label></div>';
+  h+='<div class="bar"><b class="period">'+dlong(from)+' – '+dlong(to)+'</b><button class="sm primary" data-act="xlsx">Als Excel exportieren</button></div>';
   h+='<div class="kpis"><div class="kpi"><b>'+eur(inn)+'</b><span>Einnahmen</span></div><div class="kpi"><b>'+eur(out)+'</b><span>Ausgaben</span></div><div class="kpi"><b style="color:'+(inn-out>=0?"var(--sage)":"var(--warn)")+'">'+eur(inn-out)+'</b><span>Gewinn</span></div></div>';
-  h+='<h2>Buchungen</h2><div class="list">'+(e.length?e.map(x=>'<div class="row tap" data-act="entry" data-id="'+x.id+'"><div class="main"><div class="t">'+esc(x.label)+'</div><div class="s">'+fdate(x.date,{day:"numeric",month:"short"})+' · '+esc(x.pay||"")+'</div></div><span class="num" style="color:'+(x.kind==="in"?"var(--sage)":"var(--warn)")+'">'+(x.kind==="in"?"+":"−")+eur(x.amount)+'</span></div>').join(""):'<div class="empty">Keine Buchungen in diesem Monat. Kassierte Termine und Produktverkäufe landen automatisch hier, Ausgaben trägst du mit <b>+ Buchung</b> ein.</div>')+'</div>';
+  const pays=Object.entries(R.byPay).map(([k,v])=>esc(k)+' '+eur(v)).join(' · ');
+  h+='<p class="note" style="margin:8px 2px 0">'+R.appts.length+' Termin'+(R.appts.length===1?'':'e')+(R.appts.length?' · '+R.paid+' bezahlt':'')+(pays?' · '+pays:'')+'</p>';
+  h+='<h2>Buchungen ('+e.length+')</h2><div class="list">'+(e.length?e.map(x=>'<div class="row tap" data-act="'+(x.voucherId?'voucher" data-id="'+x.voucherId:'entry" data-id="'+x.id)+'"><div class="main"><div class="t">'+esc(x.label)+'</div><div class="s">'+fdate(x.date,{day:"numeric",month:"short"})+' · '+esc(x.pay||"")+'</div></div>'+(x.kind==="redeem"?'<span class="num" style="color:var(--muted)">'+eur(x.amount)+'</span><span class="pill acc">Gutschein</span>':'<span class="num" style="color:'+(x.kind==="in"?"var(--sage)":"var(--warn)")+'">'+(x.kind==="in"?"+":"−")+eur(x.amount)+'</span>')+'</div>').join(""):'<div class="empty">Keine Buchungen in diesem Zeitraum. Kassierte Termine und Produktverkäufe landen automatisch hier, Ausgaben trägst du mit <b>+ Buchung</b> ein.</div>')+'</div>';
+  h+='<h2>Termine ('+R.appts.length+')</h2><div class="list">'+(R.appts.length?R.appts.slice().reverse().map(a=>'<div class="row tap" data-act="appt" data-id="'+a.id+'"><div class="main"><div class="t">'+esc(a.clientName||"?")+'</div><div class="s">'+fdate(a.date,{day:"numeric",month:"short"})+' · '+esc(a.time)+' · '+esc(a.treatment||"")+'</div></div><span class="num">'+eur(a.price)+'</span>'+(a.paid?'<span class="pill ok">bezahlt</span>':'<span class="pill warn">offen</span>')+'</div>').join(""):'<div class="empty">Keine Termine in diesem Zeitraum.</div>')+'</div>';
+  const vs=S.vouchers.map(v=>({...v,rest:voucherRest(v)})),openV=vs.filter(v=>v.rest>0.004).sort((a,b)=>b.date.localeCompare(a.date)),openSum=openV.reduce((s,v)=>s+v.rest,0);
+  h+='<div class="bar"><h2>Gutscheine'+(openV.length?' · '+openV.length+' offen · '+eur(openSum):'')+'</h2><button class="sm" data-act="newvoucher">+ Gutschein verkaufen</button></div><div class="list">'+
+    (openV.length?openV.map(v=>'<div class="row tap" data-act="voucher" data-id="'+v.id+'"><div class="main"><div class="t">'+esc(v.no)+' · '+esc(v.forName||v.buyer||"")+'</div><div class="s">verkauft '+fdate(v.date,{day:"numeric",month:"short",year:"numeric"})+(v.forName?' von '+esc(v.buyer):'')+(v.rest<+v.amount?' · Wert '+eur(v.amount):'')+'</div></div><span class="num">'+eur(v.rest)+'</span>'+(v.validUntil&&v.validUntil<today()?'<span class="pill warn">abgelaufen</span>':'')+'</div>').join(""):'<div class="empty">Keine offenen Gutscheine.'+(vs.length?' '+vs.length+' bereits ganz eingelöst.':'')+'</div>')+'</div>';
   h+='<div class="bar"><h2>Preisliste</h2><button class="sm" data-act="newtr">+ Behandlung</button></div><div class="list">'+(S.treatments.length?S.treatments.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(t=>'<div class="row tap" data-act="tr" data-id="'+t.id+'"><div class="main"><div class="t">'+esc(t.name)+'</div><div class="s">'+(+t.duration||0)+' Min.</div></div><span class="num">'+eur(t.price)+'</span></div>').join(""):'<div class="empty">Noch keine Preisliste. <button class="ghost" data-act="std">Von der Webseite übernehmen</button></div>')+'</div>';
   h+='<h2>Datensicherung</h2><div class="card"><p>'+esc(syncMsg||"–")+'</p><p class="note">'+(mode==="cloud"?"Automatisch bei jeder Änderung: aktueller Stand, vorheriger Stand und jeden Morgen eine Tagessicherung in OneDrive – alles verschlüsselt.":"Nur auf diesem Gerät. Bitte mit OneDrive verbinden.")+'</p><div class="actions"><span></span><button data-act="settings">Sicherungen & Einstellungen</button></div></div>';
   return h;
@@ -445,16 +509,120 @@ document.addEventListener("click",e=>{
     take:()=>{const x=ideas[+a.dataset.i];save("posts",{date:today(1),platform:x.platform,idea:x.title+": "+x.caption,done:false});ideas.splice(+a.dataset.i,1);toast("Für morgen eingeplant");render()},
     done:()=>{const p=byId("posts",id);save("posts",{...p,done:true});toast("Super, veröffentlicht!")},
     copypost:()=>copy(byId("posts",id).idea),
-    "m-1":()=>{const d=new Date(month+"-15");d.setMonth(d.getMonth()-1);month=iso(d).slice(0,7);render()},
-    "m1":()=>{const d=new Date(month+"-15");d.setMonth(d.getMonth()+1);month=iso(d).slice(0,7);render()},
-    csv:()=>{const e=S.entries.filter(x=>(x.date||"").startsWith(month)).sort((a,b)=>a.date.localeCompare(b.date));
-      dlFile("kasse-"+month+".csv","\ufeff"+["Datum;Art;Beschreibung;Zahlart;Betrag"].concat(e.map(x=>[x.date,x.kind==="in"?"Einnahme":"Ausgabe",'"'+String(x.label).replace(/"/g,'""')+'"',x.pay||"",(+x.amount||0).toFixed(2).replace(".",",")].join(";"))).join("\n"),"text/csv");toast("CSV-Datei gespeichert")}
+    rk:()=>{rk=a.dataset.k;render()}, xlsx:exportExcel, voucher:()=>showVoucher(byId("vouchers",id)), newvoucher:()=>editVoucher(),
   })[act]?.();
 });
 document.addEventListener("input",e=>{if(e.target.id==="search"){q=e.target.value;render()}});
+document.addEventListener("change",e=>{if(e.target.id==="rf"&&e.target.value){rFrom=e.target.value;render()}if(e.target.id==="rt"&&e.target.value){rTo=e.target.value;render()}});
 document.getElementById("fab").onclick=()=>VIEWS[tab][3]();
 document.getElementById("gear").onclick=sheetSettings;
 
+
+
+// ===== Excel-Datei (.xlsx) ohne Fremdbibliothek: ZIP (unkomprimiert) + Tabellen-XML =====
+// Zelle: Text | Zahl | {date:"JJJJ-MM-TT"} | {eur:Zahl} | {b:"fett"} | {beur:Zahl} | null
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC_T[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
+function zipStore(files){
+  const enc=new TextEncoder(),parts=[],central=[];let off=0;
+  for(const f of files){
+    const name=enc.encode(f.name),d=typeof f.data==="string"?enc.encode(f.data):f.data,crc=crc32(d);
+    const h=new DataView(new ArrayBuffer(30));
+    [[0,0x04034b50,4],[4,20,2],[6,0x0800,2],[8,0,2],[10,0,2],[12,0x21,2],[14,crc,4],[18,d.length,4],[22,d.length,4],[26,name.length,2],[28,0,2]].forEach(([o,v,n])=>n===4?h.setUint32(o,v,true):h.setUint16(o,v,true));
+    parts.push(new Uint8Array(h.buffer),name,d);
+    const c=new DataView(new ArrayBuffer(46));
+    [[0,0x02014b50,4],[4,20,2],[6,20,2],[8,0x0800,2],[10,0,2],[12,0,2],[14,0x21,2],[16,crc,4],[20,d.length,4],[24,d.length,4],[28,name.length,2],[30,0,2],[32,0,2],[34,0,2],[36,0,2],[38,0,4],[42,off,4]].forEach(([o,v,n])=>n===4?c.setUint32(o,v,true):c.setUint16(o,v,true));
+    central.push(new Uint8Array(c.buffer),name);
+    off+=30+name.length+d.length;
+  }
+  const cd=central.reduce((s,x)=>s+x.length,0),e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cd,true);e.setUint32(16,off,true);
+  const all=[...parts,...central,new Uint8Array(e.buffer)],out=new Uint8Array(all.reduce((s,x)=>s+x.length,0));
+  let p=0;for(const x of all){out.set(x,p);p+=x.length}
+  return out;
+}
+const xesc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,"");
+const colL=i=>{let s="";i++;while(i){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=(i-m-1)/26}return s};
+const xdate=d=>{const [y,m,dd]=String(d).split("-").map(Number);return (Date.UTC(y,m-1,dd)-Date.UTC(1899,11,30))/864e5};
+function cellXML(v,ref){
+  if(v==null||v==="")return "";
+  const str=(t,s)=>'<c r="'+ref+'" t="inlineStr"'+(s?' s="'+s+'"':'')+'><is><t xml:space="preserve">'+xesc(t)+'</t></is></c>';
+  const num=(n,s)=>'<c r="'+ref+'"'+(s?' s="'+s+'"':'')+'><v>'+(Number(n)||0)+'</v></c>';
+  if(typeof v==="number")return num(v);
+  if(typeof v==="string")return str(v);
+  if(v.date)return num(xdate(v.date),1);
+  if("eur" in v)return num(v.eur,2);
+  if("beur" in v)return num(v.beur,4);
+  if("b" in v)return str(v.b,3);
+  return str(JSON.stringify(v));
+}
+function sheetXML(sh){
+  const rows=sh.rows.map((r,i)=>'<row r="'+(i+1)+'">'+r.map((v,j)=>cellXML(v,colL(j)+(i+1))).join("")+'</row>').join("");
+  const cols=sh.cols?'<cols>'+sh.cols.map((w,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>').join("")+'</cols>':'';
+  const pane=sh.table?'<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>':'';
+  const filt=sh.table&&sh.rows.length>1?'<autoFilter ref="A1:'+colL(sh.rows[0].length-1)+sh.rows.length+'"/>':'';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0">'+pane+'</sheetView></sheetViews>'+cols+'<sheetData>'+rows+'</sheetData>'+filt+'</worksheet>';
+}
+function buildXlsx(sheets){
+  const NS='http://schemas.openxmlformats.org';
+  const styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="'+NS+'/spreadsheetml/2006/main">'+
+    '<numFmts count="2"><numFmt numFmtId="164" formatCode="#,##0.00\\ &quot;€&quot;"/><numFmt numFmtId="165" formatCode="DD.MM.YYYY"/></numFmts>'+
+    '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>'+
+    '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'+
+    '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+    '<cellXfs count="5"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="164" fontId="1" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/></cellXfs>'+
+    '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  const files=[
+    {name:"[Content_Types].xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="'+NS+'/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+sheets.map((_,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join("")+'</Types>'},
+    {name:"_rels/.rels",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="'+NS+'/package/2006/relationships"><Relationship Id="rId1" Type="'+NS+'/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
+    {name:"xl/workbook.xml",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="'+NS+'/spreadsheetml/2006/main" xmlns:r="'+NS+'/officeDocument/2006/relationships"><sheets>'+sheets.map((s,i)=>'<sheet name="'+xesc(s.name.replace(/[\[\]:*?\/\\]/g,"").slice(0,31))+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join("")+'</sheets></workbook>'},
+    {name:"xl/_rels/workbook.xml.rels",data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="'+NS+'/package/2006/relationships">'+sheets.map((_,i)=>'<Relationship Id="rId'+(i+1)+'" Type="'+NS+'/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join("")+'<Relationship Id="rId'+(sheets.length+1)+'" Type="'+NS+'/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'},
+    {name:"xl/styles.xml",data:styles},
+    ...sheets.map((s,i)=>({name:"xl/worksheets/sheet"+(i+1)+".xml",data:sheetXML(s)}))
+  ];
+  return zipStore(files);
+}
+// ===== Ende Excel =====
+
+// ===== Auswertung für einen Zeitraum (von–bis, beide Tage eingeschlossen) =====
+function periodReport(S,from,to){
+  const inR=d=>d&&d>=from&&d<=to, sum=a=>a.reduce((s,x)=>s+(+x.amount||0),0);
+  const entries=S.entries.filter(e=>inR(e.date)).sort((a,b)=>(a.date+(a.label||"")).localeCompare(b.date+(b.label||"")));
+  const appts=S.appts.filter(a=>inR(a.date)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  const ins=entries.filter(e=>e.kind==="in"), outs=entries.filter(e=>e.kind==="out");
+  const byPay={};ins.forEach(e=>{const k=e.pay||"bar";byPay[k]=(byPay[k]||0)+(+e.amount||0)});
+  const byTreat={};appts.filter(a=>a.paid).forEach(a=>{const k=a.treatment||"Ohne Angabe";const t=byTreat[k]||(byTreat[k]={n:0,sum:0});t.n++;t.sum+=+a.price||0});
+  // Gutscheine: Verkauf ist Einnahme, Einlösung nicht (sonst doppelt gezählt)
+  const sold=ins.filter(e=>e.voucherId), redeemed=entries.filter(e=>e.kind==="redeem");
+  const used=id=>S.entries.filter(e=>e.kind==="redeem"&&e.voucherId===id&&e.date<=to).reduce((s,e)=>s+(+e.amount||0),0);
+  const vouchers=(S.vouchers||[]).filter(v=>v.date<=to).map(v=>({...v,used:used(v.id),rest:(+v.amount||0)-used(v.id)})).sort((a,b)=>String(a.no).localeCompare(String(b.no)));
+  return {from,to,entries,appts,income:sum(ins),expense:sum(outs),byPay,byTreat,paid:appts.filter(a=>a.paid).length,
+    soldSum:sum(sold),redeemedSum:sum(redeemed),vouchers,openSum:vouchers.reduce((s,v)=>s+Math.max(0,v.rest),0)};
+}
+// Blätter: Einnahmen (Datum, Name, Behandlung, Zahlart, Betrag), Ausgaben, Übersicht
+function reportSheets(R,apptById,dfmt,voucherById=()=>null){
+  const r2=n=>Math.round(n*100)/100;
+  const ins=R.entries.filter(e=>e.kind==="in"), outs=R.entries.filter(e=>e.kind==="out");
+  const einnahmen=[["Datum","Name","Behandlung","Zahlart","Betrag"]].concat(
+    ins.map(e=>{const a=e.apptId&&apptById(e.apptId),v=e.voucherId&&voucherById(e.voucherId);
+      return [{date:e.date},a?.clientName||v?.buyer||"",a?(a.treatment||"")+(e.label&&/Rest zum Gutschein/.test(e.label)?" (Rest zum Gutschein)":""):v?"Gutschein "+v.no+" verkauft":(e.label||""),e.pay||"",{eur:+e.amount||0}]}),
+    [[null,null,null,{b:"Summe"},{beur:r2(R.income)}]]);
+  const ausgaben=[["Datum","Beschreibung","Zahlart","Betrag"]].concat(
+    outs.map(e=>[{date:e.date},e.label||"",e.pay||"",{eur:+e.amount||0}]),
+    [[null,null,{b:"Summe"},{beur:r2(R.expense)}]]);
+  const sum=[[{b:"Auszeit – Mira’s Wellness"}],["Zeitraum",dfmt(R.from)+" – "+dfmt(R.to)],[],
+    [{b:"Einnahmen"},{beur:r2(R.income)}],[{b:"Ausgaben"},{beur:r2(R.expense)}],[{b:"Gewinn"},{beur:r2(R.income-R.expense)}],[],
+    ["Termine gesamt",R.appts.length],["davon bezahlt",R.paid],[],
+    [{b:"Gutscheine"}],["verkauft im Zeitraum (in Einnahmen enthalten)",{eur:r2(R.soldSum)}],["eingelöst im Zeitraum (keine Einnahme)",{eur:r2(R.redeemedSum)}],["offener Restwert am "+dfmt(R.to),{eur:r2(R.openSum)}],[],[{b:"Einnahmen nach Zahlart"}]]
+    .concat(Object.entries(R.byPay).sort().map(([k,v])=>[k,{eur:r2(v)}]),[[],[{b:"Umsatz nach Behandlung"},{b:"Anzahl"},{b:"Summe"}]],
+      Object.entries(R.byTreat).sort((a,b)=>b[1].sum-a[1].sum).map(([k,t])=>[k,t.n,{eur:r2(t.sum)}]));
+  const gut=[["Nr.","Verkauft am","Gekauft von","Für","Wert","Eingelöst","Restwert","Gültig bis"]].concat(
+    R.vouchers.map(v=>[v.no||"",{date:v.date},v.buyer||"",v.forName||"",{eur:+v.amount||0},{eur:r2(v.used)},{eur:r2(v.rest)},v.validUntil?{date:v.validUntil}:""]));
+  return [{name:"Einnahmen",cols:[12,26,34,12,12],rows:einnahmen,table:true},{name:"Ausgaben",cols:[12,40,12,12],rows:ausgaben,table:true},
+    {name:"Gutscheine",cols:[11,12,22,22,11,11,11,12],rows:gut,table:true},{name:"Übersicht",cols:[44,26,14],rows:sum}];
+}
+// ===== Ende Auswertung =====
 
 // ===== Verschlüsselung (AES-GCM 256, Schlüssel aus Passwort per PBKDF2) =====
 // Ein zufälliger Datenschlüssel verschlüsselt die Daten. Er ist doppelt "eingepackt":
@@ -718,7 +886,7 @@ function screen(html){
   document.getElementById("title").textContent="";
   document.getElementById("sync").textContent="";
   document.querySelector("nav").hidden=true;document.getElementById("fab").hidden=true;document.getElementById("gear").hidden=true;
-  document.getElementById("view").innerHTML='<div class="gate"><div class="brand"><img src="icon.png" alt=""><div><span class="script">Auszeit</span><small>Mira’s Wellness</small></div></div>'+WAVE+html+'</div>';
+  document.getElementById("view").innerHTML='<div class="gate"><div class="brand"><div class="wm"><span class="word">Auszeit</span><img class="bfly" src="'+BUTTERFLY+'" alt=""></div><span class="sub">Mira’s Wellness</span></div>'+WAVE+html+'</div>';
   document.querySelector("#view input")?.focus();
 }
 const pwField=(id,label,ac="current-password")=>'<label class="f" for="'+id+'">'+label+'<input id="'+id+'" type="password" autocomplete="'+ac+'" required minlength="8"></label>';
