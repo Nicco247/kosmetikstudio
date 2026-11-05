@@ -211,14 +211,54 @@ function form(title,fields,obj,onSave,onDelete,extra="",delLabel="Löschen"){
 // ---------- editors ----------
 const SKIN=["","normal","trocken","fettig","Mischhaut","sensibel","reif","unrein / Akne"];
 const FITZ=[["","–"],["I","I – sehr hell"],["II","II – hell"],["III","III – mittel"],["IV","IV – oliv"],["V","V – braun"],["VI","VI – dunkel"]];
-function editClient(c={}){
-  form(c.id?"Kundin bearbeiten":"Neue Kundin",[
-    {k:"name",label:"Name",req:1},{k:"phone",label:"Telefon / WhatsApp",type:"tel"},
+const hasPicker=()=>"contacts" in navigator&&"select" in (navigator.contacts||{});
+async function pickContacts(multiple){
+  try{const r=await navigator.contacts.select(["name","tel"],{multiple});return r.map(c=>({name:(c.name||[])[0]||"",tel:c.tel||[]}))}
+  catch{toast("Kontakte konnten nicht geöffnet werden");return []}
+}
+function readVcfFile(input){return new Promise(res=>{input.onchange=async()=>{const f=input.files[0];if(!f)return res([]);res(parseVCards(await f.text()))};input.click()})}
+const VCF_HELP='<p class="note">iPhone: In „Kontakte“ (oder WhatsApp) den Kontakt öffnen → <b>Kontakt teilen</b> → <b>In Dateien sichern</b>. Dann hier „Kontaktkarte laden“.</p>';
+function clientNameFor(phone){return phone?"Kundin "+phone:"Kundin "+(S.clients.length+1)}
+function editClient(c={},after){
+  const el=form(c.id?"Kundin bearbeiten":"Neue Kundin",[
+    {k:"name",label:"Name (darf leer bleiben)"},{k:"phone",label:"Telefon / WhatsApp",type:"tel"},
     {k:"birthday",label:"Geburtstag",type:"date",half:1},{k:"skin",label:"Hauttyp",type:"select",opts:SKIN,half:1},
     {k:"fitz",label:"Fototyp (Fitzpatrick)",type:"select",opts:FITZ},
     {k:"allergies",label:"Allergien / Unverträglichkeiten"},
     {k:"notes",label:"Notizen (Wünsche, Medikamente, Vorlieben)",type:"textarea"}
-  ],c,o=>{save("clients",o);toast("Kundin gespeichert")},c.id&&(()=>del("clients",c.id)));
+  ],c,o=>{
+    o.name=(o.name||"").trim();o.phone=(o.phone||"").trim();
+    const auto=!o.name||(c.noName&&o.name===c.name);
+    if(!o.name)o.name=clientNameFor(o.phone);
+    o.noName=auto;
+    if(!o.id)o.id=crypto.randomUUID?crypto.randomUUID():b64url(rand(12));
+    const dup=o.phone&&S.clients.find(x=>x.id!==o.id&&x.phone&&phoneKey(x.phone)===phoneKey(o.phone));
+    // Name bei allen Terminen nachziehen (z. B. "Kundin 0176…" -> echter Name)
+    S.appts.forEach(x=>{if(x.clientId===o.id&&x.clientName!==o.name)x.clientName=o.name});
+    save("clients",o);
+    toast(dup?"Gespeichert – Achtung, die Nummer gibt es schon bei "+dup.name:"Kundin gespeichert",dup?5000:2600);
+    if(after)setTimeout(()=>after(o),50);
+  },c.id&&(()=>del("clients",c.id)),c.id?'':VCF_HELP);
+  const first=el.querySelector("#frm label");
+  first.insertAdjacentHTML("beforebegin",'<div class="actions" style="justify-content:flex-start;margin:0 0 2px">'+(hasPicker()?'<button type="button" class="sm" id="cpick">Aus Kontakten wählen</button>':'')+'<button type="button" class="sm" id="cvcf">Kontaktkarte laden</button><input type="file" id="cvcfin" accept=".vcf,text/vcard,text/x-vcard" hidden></div>');
+  const fill=k=>{if(!k)return;if(k.name)el.querySelector("#f_name").value=k.name;if(k.tel&&k.tel[0])el.querySelector("#f_phone").value=k.tel[0];toast("Kontakt übernommen")};
+  el.querySelector("#cpick")?.addEventListener("click",async()=>fill((await pickContacts(false))[0]));
+  el.querySelector("#cvcf").onclick=async()=>{const r=await readVcfFile(el.querySelector("#cvcfin"));if(!r.length)return toast("In der Datei war kein Kontakt");fill(r[0])};
+}
+// Mehrere Kontakte auf einmal übernehmen
+async function importContacts(src){
+  let list=src==="picker"?await pickContacts(true):await readVcfFile(Object.assign(document.createElement("input"),{type:"file",accept:".vcf,text/vcard,text/x-vcard"}));
+  if(!list.length)return;
+  const known=new Set(S.clients.map(c=>phoneKey(c.phone)).filter(Boolean));
+  list=list.map(k=>({...k,phone:k.tel[0]||"",dup:!!(k.tel[0]&&known.has(phoneKey(k.tel[0])))}));
+  sheet(list.length+" Kontakt"+(list.length===1?"":"e")+" gefunden",'<p class="note">Haken setzen, wer übernommen werden soll. Schon vorhandene Nummern sind nicht angehakt.</p><div class="list">'+
+    list.map((k,i)=>'<label class="row" style="cursor:pointer"><input type="checkbox" data-i="'+i+'" '+(k.dup?'':'checked')+' style="width:22px;height:22px;flex:none"><div class="main"><div class="t">'+esc(k.name||"(ohne Namen)")+'</div><div class="s">'+esc(k.phone||"keine Nummer")+'</div></div>'+(k.dup?'<span class="pill warn">schon da</span>':'')+'</label>').join("")+
+    '</div><div class="actions" style="margin-top:12px"><button type="button" id="imc">Abbrechen</button><button class="primary" id="imgo">Übernehmen</button></div>',el=>{
+      el.querySelector("#imc").onclick=closeSheet;
+      el.querySelector("#imgo").onclick=()=>{let n=0;el.querySelectorAll("input[data-i]:checked").forEach(cb=>{const k=list[+cb.dataset.i];
+        S.clients.push({id:crypto.randomUUID?crypto.randomUUID():b64url(rand(12)),name:k.name||clientNameFor(k.phone),phone:k.phone,noName:!k.name});n++});
+        if(n)dirty();closeSheet();render();toast(n+" Kundin"+(n===1?"":"nen")+" übernommen")};
+    });
 }
 function editAppt(a={}){
   const tr=S.treatments.slice().sort((x,y)=>x.name.localeCompare(y.name));
@@ -237,7 +277,9 @@ function editAppt(a={}){
    a.paid?'<p class="note">Bereits kassiert – ein geänderter Preis wird in der Kasse mit angepasst.</p>':'',"Termin löschen (Absage / zu früh)");
   const t=el.querySelector("#f_treatment"),p=el.querySelector("#f_price");
   t.onchange=()=>{const x=tr.find(x=>x.name===t.value);if(x)p.value=x.price};
-  if(!cl.length)el.querySelector("#f_clientId").insertAdjacentHTML("afterend",'<span class="note">Lege zuerst eine Kundin unter „Kundinnen“ an.</span>');
+  el.querySelector("#f_clientId").insertAdjacentHTML("afterend",'<button type="button" class="ghost" id="newcl" style="align-self:flex-start;padding:4px 0">+ Neue Kundin anlegen</button>');
+  el.querySelector("#newcl").onclick=()=>{const f=el.querySelector("#frm"),v={...a};["date","time","treatment","price","note"].forEach(k=>v[k]=f.elements[k].value);
+    editClient({},o=>editAppt({...v,clientId:o.id}))};
 }
 function editTreatment(t={}){form(t.id?"Behandlung bearbeiten":"Neue Behandlung",[
   {k:"name",label:"Name",req:1},{k:"duration",label:"Dauer (Min.)",type:"number",def:60,half:1},{k:"price",label:"Preis (€)",type:"number",half:1}
@@ -435,9 +477,10 @@ function vTermine(){
 function vKunden(){
   const l=S.clients.filter(c=>!q||(c.name+" "+(c.phone||"")).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name));
   const last=id=>S.appts.filter(a=>a.clientId===id&&a.date<=today()).map(a=>a.date).sort().pop();
-  return '<input id="search" type="search" placeholder="Kundin suchen …" value="'+esc(q)+'" aria-label="Kundin suchen" style="margin-top:6px">'+
+  return '<input id="search" type="search" placeholder="Name oder Nummer suchen …" value="'+esc(q)+'" aria-label="Kundin suchen" style="margin-top:6px">'+
+   '<div class="actions" style="justify-content:flex-start;margin-top:10px">'+(hasPicker()?'<button class="sm" data-act="impick">Aus Kontakten importieren</button>':'')+'<button class="sm" data-act="imvcf">Kontaktkarten laden</button></div>'+
    '<h2>'+S.clients.length+' Kundinnen</h2><div class="list">'+(l.length?l.map(c=>{const ld=last(c.id),weeks=ld?Math.floor((Date.now()-new Date(ld))/6048e5):null;
-    return '<div class="row tap" data-act="client" data-id="'+c.id+'"><div class="main"><div class="t">'+esc(c.name)+'</div><div class="s">'+[c.skin,ld&&"zuletzt "+fdate(ld,{day:"numeric",month:"short"})].filter(Boolean).map(esc).join(" · ")+'</div></div>'+(c.allergies?'<span class="pill warn">Allergie</span>':'')+(weeks>=8?'<span class="pill acc">'+weeks+' Wo.</span>':'')+'</div>'}).join(""):'<div class="empty">'+(q?"Keine Kundin gefunden.":"Noch keine Kundinnen. Mit <b>+ Kundin</b> legst du die erste Karteikarte an: Hauttyp, Allergien, Notizen und alle Behandlungen auf einen Blick.")+'</div>')+'</div>'+
+    return '<div class="row tap" data-act="client" data-id="'+c.id+'"><div class="main"><div class="t">'+esc(c.name)+'</div><div class="s">'+[c.skin,ld&&"zuletzt "+fdate(ld,{day:"numeric",month:"short"})].filter(Boolean).map(esc).join(" · ")+'</div></div>'+(c.noName?'<span class="pill acc">Name fehlt</span>':'')+(c.allergies?'<span class="pill warn">Allergie</span>':'')+(weeks>=8?'<span class="pill acc">'+weeks+' Wo.</span>':'')+'</div>'}).join(""):'<div class="empty">'+(q?"Keine Kundin gefunden.":"Noch keine Kundinnen. Mit <b>+ Kundin</b> legst du die erste Karteikarte an: Hauttyp, Allergien, Notizen und alle Behandlungen auf einen Blick.")+'</div>')+'</div>'+
    (S.clients.length?'<p class="note">„Wo.“ = seit so vielen Wochen nicht mehr da – gute Gelegenheit, sich zu melden.</p>':'');
 }
 function vKasse(){
@@ -509,6 +552,7 @@ document.addEventListener("click",e=>{
     take:()=>{const x=ideas[+a.dataset.i];save("posts",{date:today(1),platform:x.platform,idea:x.title+": "+x.caption,done:false});ideas.splice(+a.dataset.i,1);toast("Für morgen eingeplant");render()},
     done:()=>{const p=byId("posts",id);save("posts",{...p,done:true});toast("Super, veröffentlicht!")},
     copypost:()=>copy(byId("posts",id).idea),
+    impick:()=>importContacts("picker"), imvcf:()=>importContacts("vcf"),
     rk:()=>{rk=a.dataset.k;render()}, xlsx:exportExcel, voucher:()=>showVoucher(byId("vouchers",id)), newvoucher:()=>editVoucher(),
   })[act]?.();
 });
@@ -518,6 +562,30 @@ document.getElementById("fab").onclick=()=>VIEWS[tab][3]();
 document.getElementById("gear").onclick=sheetSettings;
 
 
+
+// ===== Kontakte: vCard-Dateien (.vcf) lesen, Telefonnummern vergleichen =====
+function parseVCards(text){
+  const lines=String(text).replace(/\r\n?/g,"\n").replace(/\n[ \t]/g,"").split("\n"); // Folgezeilen anhängen
+  const out=[];let cur=null;
+  const qp=s=>{const b=[];s=s.replace(/=\n/g,"");for(let i=0;i<s.length;i++){if(s[i]==="="&&/^[0-9A-F]{2}$/i.test(s.substr(i+1,2))){b.push(parseInt(s.substr(i+1,2),16));i+=2}else b.push(...new TextEncoder().encode(s[i]))}return new TextDecoder().decode(new Uint8Array(b))};
+  const unesc=s=>s.replace(/\\n/gi," ").replace(/\\([,;\\])/g,"$1").trim();
+  for(let raw of lines){
+    if(/^BEGIN:VCARD/i.test(raw)){cur={name:"",tel:[]};continue}
+    if(/^END:VCARD/i.test(raw)){if(cur&&(cur.name||cur.tel.length))out.push(cur);cur=null;continue}
+    if(!cur)continue;
+    const i=raw.indexOf(":");if(i<0)continue;
+    let key=raw.slice(0,i),val=raw.slice(i+1);
+    if(/ENCODING=QUOTED-PRINTABLE/i.test(key))val=qp(val);
+    const k=key.split(";")[0].replace(/^item\d+\./i,"").toUpperCase();
+    if(k==="FN")cur.name=unesc(val);
+    else if(k==="N"&&!cur.name){const p=val.split(";").map(unesc);cur.name=[p[3],p[1],p[2],p[0],p[4]].filter(Boolean).join(" ")}
+    else if(k==="TEL"){const t=unesc(val).replace(/^tel:/i,"");if(t)cur.tel.push(t)}
+  }
+  return out;
+}
+// Für den Vergleich: nur Ziffern, deutsche 0 am Anfang -> 49
+const phoneKey=p=>{let d=String(p||"").replace(/[^\d+]/g,"");if(d.startsWith("+"))d=d.slice(1);else if(d.startsWith("00"))d=d.slice(2);else if(d.startsWith("0"))d="49"+d.slice(1);return d};
+// ===== Ende Kontakte =====
 
 // ===== Excel-Datei (.xlsx) ohne Fremdbibliothek: ZIP (unkomprimiert) + Tabellen-XML =====
 // Zelle: Text | Zahl | {date:"JJJJ-MM-TT"} | {eur:Zahl} | {b:"fett"} | {beur:Zahl} | null
