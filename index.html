@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mein Kosmetikstudio</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Studio">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F5F3F7">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@1,6..96,500&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: phone-first single column, sticky header, bottom tab bar; sheets slide up for forms */
+:root{
+  --bg:#F5F3F7; --surface:#FFFFFF; --ink:#2A1F2D; --muted:#76697A; --line:#E4DEE7;
+  --accent:#A3355F; --accent-soft:#F6E3EB; --sage:#4F7F6D; --sage-soft:#E2EEE8; --warn:#B4621B; --warn-soft:#F8EADB;
+  --display:"Bodoni Moda",Didot,"Times New Roman",serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#17121A; --surface:#221B25; --ink:#F1EAF3; --muted:#A99CAD; --line:#382E3C;
+  --accent:#E57FA6; --accent-soft:#3D2230; --sage:#8CC2AC; --sage-soft:#1F3029; --warn:#E9A464; --warn-soft:#3A2817; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17121A; --surface:#221B25; --ink:#F1EAF3; --muted:#A99CAD; --line:#382E3C;
+  --accent:#E57FA6; --accent-soft:#3D2230; --sage:#8CC2AC; --sage-soft:#1F3029; --warn:#E9A464; --warn-soft:#3A2817; color-scheme:dark}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 110px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 10px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{font-family:var(--display);font-style:italic;font-weight:500;font-size:30px;margin:0;line-height:1.1;text-wrap:balance}
+h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;font-weight:600}
+.date{color:var(--muted);font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.kpi b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+.list{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line);min-width:0}
+.row:first-child{border-top:0}
+.row.tap{cursor:pointer}
+.row .main{flex:1;min-width:0}
+.row .t{font-weight:600;overflow-wrap:anywhere}
+.row .s{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.time{font-variant-numeric:tabular-nums;font-weight:700;width:46px;flex:none;color:var(--accent)}
+.num{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:var(--sage-soft);color:var(--sage)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+.empty{padding:18px 14px;color:var(--muted);font-size:14px}
+.empty b{color:var(--ink)}
+button,.btn{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button.ghost{border-color:transparent;background:transparent;color:var(--accent);padding:6px 8px}
+button.sm{padding:5px 10px;font-size:13px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:18px 0 8px}
+.bar h2{margin:0}
+.fab{position:fixed;right:max(16px,calc(env(safe-area-inset-right,0px) + 16px));bottom:calc(env(safe-area-inset-bottom,0px) + 78px);z-index:6;border-radius:99px;padding:12px 18px;box-shadow:0 6px 20px rgb(0 0 0 / .18)}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
+nav button{border:0;border-radius:0;background:none;flex-direction:column;gap:2px;padding:8px 2px 10px;font-size:11px;font-weight:600;color:var(--muted)}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+nav button[aria-current="page"]{color:var(--accent)}
+input,select,textarea{font:inherit;width:100%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:10px 12px}
+textarea{min-height:80px;resize:vertical}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:600}
+.sheet-bg{position:fixed;inset:0;background:rgb(20 10 20 / .45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--surface);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding-block:18px calc(18px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet h3{font-family:var(--display);font-style:italic;font-weight:500;font-size:24px;margin:0 0 14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form{display:flex;flex-direction:column;gap:12px}
+.actions{display:flex;gap:8px;justify-content:space-between;margin-top:6px;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card p{margin:0 0 6px}
+.note{font-size:13px;color:var(--muted)}
+.allergy{background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:8px 10px;font-weight:600;font-size:14px}
+.status{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 80px);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:99px;font-size:13px;z-index:30}
+.month{display:flex;align-items:center;gap:6px}
+.big{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.tips li{margin-bottom:6px}
+.stepper{display:flex;align-items:center;gap:4px}
+.stepper button{width:32px;height:32px;justify-content:center;padding:0}
+.hr{display:flex;align-items:center;gap:6px;min-width:0}
+#sync{color:var(--muted);font-size:12px;text-align:right;overflow-wrap:anywhere}
+#gear{padding:6px 8px;border-color:transparent;background:transparent;color:var(--muted)}
+#gear svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7}
+.gate{display:flex;flex-direction:column;gap:12px;max-width:420px;margin:24px auto 0}
+.gate h2{font-family:var(--display);font-style:italic;text-transform:none;letter-spacing:0;font-size:26px;color:var(--ink);margin:0;font-weight:500}
+.gate p{margin:0}
+.wide{width:100%;justify-content:center;padding:12px}
+.gerr{color:var(--warn);font-weight:600;margin:0}
+.center{text-align:center}
+.rk{background:var(--accent-soft);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px;text-align:center}
+.rk b{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:19px;letter-spacing:.04em;color:var(--ink);user-select:all;overflow-wrap:anywhere}
+.rk small{color:var(--muted)}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px}
+.check input{width:20px;height:20px;flex:none;margin-top:1px}
+.menu{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.menu button{justify-content:flex-start;padding:12px;white-space:normal;text-align:left}
+@media print{body *{visibility:hidden}#rkprint,#rkprint *{visibility:visible}#rkprint{position:absolute;left:0;top:0;width:100%}}
+@media (max-width:380px){.kpi b{font-size:19px}nav button{font-size:10px}}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.6}}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header><h1 id="title">Mein Kosmetikstudio</h1><div class="hr"><span id="sync"></span><button id="gear" aria-label="Einstellungen und Sicherungen" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div></header>
+  <main id="view"><div class="empty">Studio wird geladen …</div><noscript>Bitte JavaScript aktivieren.</noscript></main>
+</div>
+<button class="primary fab" id="fab" hidden></button>
+<nav hidden><div class="in" id="tabs"></div></nav>
+<div id="status" class="status" hidden></div>
+
+<script>
+const TABS=[
+ ["heute","Heute",'<path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/><circle cx="12" cy="12" r="4"/>'],
+ ["termine","Termine",'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
+ ["kunden","Kundinnen",'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>'],
+ ["kasse","Kasse",'<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/>'],
+ ["lager","Lager",'<path d="M9 3h6v4l2 3v10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V10l2-3z"/><path d="M9 7h6"/>'],
+ ["social","Social",'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".6"/>']
+];
+const KEYS=["clients","appts","treatments","products","entries","posts"];
+const S=Object.fromEntries(KEYS.map(k=>[k,[]]));
+// Nach der Microsoft-Registrierung hier die Anwendungs-ID (Client-ID) eintragen, siehe Anleitung Schritt 2
+const CLIENT_ID="";
+let ready=false, ideas=[];
+let tab="heute", day=today(), month=today().slice(0,7), q="";
+
+// ---------- helpers ----------
+function today(d=0){const t=new Date();t.setDate(t.getDate()+d);return iso(t)}
+function iso(t){return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0")}
+const eur=n=>(Number(n)||0).toLocaleString("de-DE",{style:"currency",currency:"EUR"});
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fdate=(d,o={weekday:"short",day:"numeric",month:"short"})=>new Date(d+"T12:00").toLocaleDateString("de-DE",o);
+const byId=(k,id)=>S[k].find(x=>x.id===id);
+function toast(m,ms=2600){const s=document.getElementById("status");s.textContent=m;s.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>s.hidden=true,ms)}
+
+async function save(k,obj){
+  const o={...obj};if(!o.id)o.id=(crypto.randomUUID?crypto.randomUUID():b64url(rand(12)));
+  const i=S[k].findIndex(x=>x.id===o.id);if(i>=0)S[k][i]=o;else S[k].push(o);
+  dirty();render();
+}
+async function del(k,id){S[k]=S[k].filter(x=>x.id!==id);dirty();render()}
+
+// ---------- sheet form ----------
+function sheet(title,html,onMount){
+  closeSheet();
+  const bg=document.createElement("div");bg.className="sheet-bg";bg.id="sheet";
+  bg.innerHTML='<div class="sheet" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><h3>'+esc(title)+'</h3>'+html+'</div>';
+  bg.addEventListener("click",e=>{if(e.target===bg)closeSheet()});
+  document.body.appendChild(bg);onMount&&onMount(bg);
+  bg.querySelector("input,select,textarea")?.focus();
+}
+function closeSheet(){document.getElementById("sheet")?.remove()}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
+
+function field(f,v){
+  const id="f_"+f.k, val=esc(v??f.def??"");
+  let inp;
+  if(f.type==="textarea")inp='<textarea id="'+id+'" name="'+f.k+'">'+val+'</textarea>';
+  else if(f.type==="select")inp='<select id="'+id+'" name="'+f.k+'">'+f.opts.map(o=>{const [ov,ol]=Array.isArray(o)?o:[o,o];return'<option value="'+esc(ov)+'"'+(String(ov)===String(v??f.def??"")?" selected":"")+'>'+esc(ol)+'</option>'}).join("")+'</select>';
+  else inp='<input id="'+id+'" name="'+f.k+'" type="'+(f.type||"text")+'" value="'+val+'"'+(f.type==="number"?' step="any" inputmode="decimal"':"")+(f.req?" required":"")+'>';
+  return '<label class="f" for="'+id+'">'+esc(f.label)+inp+'</label>';
+}
+function form(title,fields,obj,onSave,onDelete,extra="",delLabel="Löschen"){
+  const rows=[];for(let i=0;i<fields.length;i++){const f=fields[i];
+    if(f.half&&fields[i+1]?.half){rows.push('<div class="grid2">'+field(f,obj[f.k])+field(fields[i+1],obj[fields[i+1].k])+'</div>');i++}
+    else rows.push(field(f,obj[f.k]))}
+  sheet(title,'<form class="form" id="frm">'+rows.join("")+extra+'<div class="actions">'+(onDelete?'<button type="button" class="ghost" id="fdel">'+delLabel+'</button>':'<span></span>')+'<span style="display:flex;gap:8px"><button type="button" id="fcancel">Abbrechen</button><button class="primary" type="submit">Speichern</button></span></div></form>',el=>{
+    const fm=el.querySelector("#frm");
+    fm.addEventListener("submit",e=>{e.preventDefault();const o={...obj};
+      fields.forEach(f=>{let v=fm.elements[f.k].value;if(f.type==="number")v=v===""?0:Number(v.replace(",","."));o[f.k]=v});
+      onSave(o);closeSheet()});
+    el.querySelector("#fcancel").onclick=closeSheet;
+    if(onDelete){const b=el.querySelector("#fdel");b.onclick=()=>{if(b.dataset.c){onDelete();closeSheet()}else{b.dataset.c=1;b.textContent="Wirklich löschen?"}}}
+    fm.dataset.mounted=1;el.dispatchEvent(new CustomEvent("mounted"));
+  });
+  return document.getElementById("sheet");
+}
+
+// ---------- editors ----------
+const SKIN=["","normal","trocken","fettig","Mischhaut","sensibel","reif","unrein / Akne"];
+const FITZ=[["","–"],["I","I – sehr hell"],["II","II – hell"],["III","III – mittel"],["IV","IV – oliv"],["V","V – braun"],["VI","VI – dunkel"]];
+function editClient(c={}){
+  form(c.id?"Kundin bearbeiten":"Neue Kundin",[
+    {k:"name",label:"Name",req:1},{k:"phone",label:"Telefon / WhatsApp",type:"tel"},
+    {k:"birthday",label:"Geburtstag",type:"date",half:1},{k:"skin",label:"Hauttyp",type:"select",opts:SKIN,half:1},
+    {k:"fitz",label:"Fototyp (Fitzpatrick)",type:"select",opts:FITZ},
+    {k:"allergies",label:"Allergien / Unverträglichkeiten"},
+    {k:"notes",label:"Notizen (Wünsche, Medikamente, Vorlieben)",type:"textarea"}
+  ],c,o=>{save("clients",o);toast("Kundin gespeichert")},c.id&&(()=>del("clients",c.id)));
+}
+function editAppt(a={}){
+  const tr=S.treatments.slice().sort((x,y)=>x.name.localeCompare(y.name));
+  const cl=S.clients.slice().sort((x,y)=>x.name.localeCompare(y.name));
+  const el=form(a.id?"Termin bearbeiten":"Neuer Termin",[
+    {k:"date",label:"Datum",type:"date",def:day,half:1},{k:"time",label:"Uhrzeit",type:"time",def:"10:00",half:1},
+    {k:"clientId",label:"Kundin",type:"select",opts:[["","– Kundin wählen –"],...cl.map(c=>[c.id,c.name])]},
+    {k:"treatment",label:"Behandlung",type:"select",opts:[["","– Behandlung wählen –"],...tr.map(t=>[t.name,t.name+" · "+t.duration+" Min."])]},
+    {k:"price",label:"Preis (€)",type:"number",half:1},{k:"note",label:"Notiz",half:1}
+  ],a,o=>{o.clientName=byId("clients",o.clientId)?.name||"";if(!o.clientId){toast("Bitte eine Kundin wählen");return}save("appts",o);
+    const e=entryFor(o.id);if(e)save("entries",{...e,amount:+o.price||0,date:o.date,label:(o.treatment||"Behandlung")+" – "+o.clientName});
+    toast("Termin gespeichert")},
+   a.id&&(()=>{del("appts",a.id);const e=entryFor(a.id);if(e)del("entries",e.id);toast("Termin gelöscht")}),
+   a.paid?'<p class="note">Bereits kassiert – ein geänderter Preis wird in der Kasse mit angepasst.</p>':'',"Termin löschen (Absage / zu früh)");
+  const t=el.querySelector("#f_treatment"),p=el.querySelector("#f_price");
+  t.onchange=()=>{const x=tr.find(x=>x.name===t.value);if(x)p.value=x.price};
+  if(!cl.length)el.querySelector("#f_clientId").insertAdjacentHTML("afterend",'<span class="note">Lege zuerst eine Kundin unter „Kundinnen“ an.</span>');
+}
+function editTreatment(t={}){form(t.id?"Behandlung bearbeiten":"Neue Behandlung",[
+  {k:"name",label:"Name",req:1},{k:"duration",label:"Dauer (Min.)",type:"number",def:60,half:1},{k:"price",label:"Preis (€)",type:"number",half:1}
+ ],t,o=>save("treatments",o),t.id&&(()=>del("treatments",t.id)))}
+function editProduct(p={}){form(p.id?"Produkt bearbeiten":"Neues Produkt",[
+  {k:"name",label:"Produkt",req:1},{k:"brand",label:"Marke / Lieferant"},
+  {k:"stock",label:"Bestand",type:"number",def:0,half:1},{k:"min",label:"Nachbestellen ab",type:"number",def:2,half:1},
+  {k:"price",label:"Verkaufspreis (€)",type:"number",half:1},{k:"cost",label:"Einkaufspreis (€)",type:"number",half:1},
+  {k:"kind",label:"Verwendung",type:"select",opts:["Verkauf","Kabine","Verkauf & Kabine"]}
+ ],p,o=>save("products",o),p.id&&(()=>del("products",p.id)))}
+function editEntry(e={}){form(e.id?"Buchung bearbeiten":"Neue Buchung",[
+  {k:"kind",label:"Art",type:"select",opts:[["in","Einnahme"],["out","Ausgabe"]],def:"out",half:1},{k:"date",label:"Datum",type:"date",def:today(),half:1},
+  {k:"label",label:"Beschreibung (z. B. Wachs, Miete, Gutschein)",req:1},{k:"amount",label:"Betrag (€)",type:"number"},
+  {k:"pay",label:"Zahlart",type:"select",opts:["bar","Karte","Überweisung","PayPal"]}
+ ],e,o=>save("entries",o),e.id&&(()=>del("entries",e.id)))}
+function editPost(p={}){form(p.id?"Beitrag bearbeiten":"Beitrag planen",[
+  {k:"date",label:"Datum",type:"date",def:today(1),half:1},{k:"platform",label:"Kanal",type:"select",opts:["Instagram","Instagram Story","Facebook","TikTok","Google-Profil","WhatsApp Status"],half:1},
+  {k:"idea",label:"Idee / Text",type:"textarea",req:1}
+ ],p,o=>{o.done=!!o.done;save("posts",o)},p.id&&(()=>del("posts",p.id)))}
+
+function showClient(c){
+  const hist=S.appts.filter(a=>a.clientId===c.id).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  const spent=hist.filter(a=>a.paid).reduce((s,a)=>s+(+a.price||0),0);
+  sheet(c.name,
+   (c.allergies?'<div class="allergy">⚠ Allergien: '+esc(c.allergies)+'</div>':'')+
+   '<div class="card" style="margin-top:10px"><p>'+[c.skin&&"Hauttyp: <b>"+esc(c.skin)+"</b>",c.fitz&&"Fototyp <b>"+esc(c.fitz)+"</b>",c.birthday&&"Geburtstag: <b>"+fdate(c.birthday,{day:"numeric",month:"long"})+"</b>",c.phone&&"Tel.: <b style=\"user-select:all\">"+esc(c.phone)+"</b>"].filter(Boolean).join("<br>")+'</p>'+(c.notes?'<p class="note">'+esc(c.notes).replace(/\n/g,"<br>")+'</p>':'')+'</div>'+
+   '<h2>Behandlungen ('+hist.length+') · '+eur(spent)+' Umsatz</h2>'+
+   (hist.length?'<div class="list">'+hist.map(a=>'<div class="row"><div class="main"><div class="t">'+esc(a.treatment||"Termin")+'</div><div class="s">'+fdate(a.date,{day:"numeric",month:"short",year:"numeric"})+(a.note?" · "+esc(a.note):"")+'</div></div><span class="num">'+eur(a.price)+'</span></div>').join("")+'</div>':'<div class="empty">Noch keine Termine.</div>')+
+   '<div class="actions" style="margin-top:14px"><button id="ce">Bearbeiten</button><button class="primary" id="cn">Termin anlegen</button></div>',
+   el=>{el.querySelector("#ce").onclick=()=>editClient(c);el.querySelector("#cn").onclick=()=>editAppt({clientId:c.id,date:today()})});
+}
+
+// ---------- actions ----------
+const entryFor=apptId=>apptId&&S.entries.find(e=>e.apptId===apptId);
+function checkout(a){
+  form("Kassieren · "+(a.clientName||""),[
+    {k:"price",label:"Preis heute (€) – bei Bedarf anpassen",type:"number"},
+    {k:"pay",label:"Zahlart",type:"select",opts:["bar","Karte","Überweisung","PayPal","Gutschein"]}
+  ],{...a,pay:"bar"},async o=>{
+    const {pay,...appt}=o;
+    await save("appts",{...appt,paid:true});
+    const e=entryFor(a.id);
+    await save("entries",{...(e||{}),kind:"in",date:a.date,label:(a.treatment||"Behandlung")+" – "+(a.clientName||""),amount:+o.price||0,pay,apptId:a.id});
+    toast(eur(o.price)+" kassiert");
+  },null,'<p class="note">'+esc(a.treatment||"")+' · Listenpreis '+eur(a.price)+'</p>');
+}
+async function sell(p){
+  if((+p.stock||0)<=0){toast("Nicht mehr auf Lager");return}
+  await save("products",{...p,stock:(+p.stock||0)-1});
+  await save("entries",{kind:"in",date:today(),label:"Verkauf: "+p.name,amount:+p.price||0,pay:"bar"});
+  toast(p.name+" verkauft");
+}
+function reminderText(a){
+  const first=(a.clientName||"").split(" ")[0];
+  return "Hallo "+first+", ich freue mich auf dich morgen ("+fdate(a.date,{weekday:"long"})+") um "+a.time+" Uhr zur "+(a.treatment||"Behandlung")+". Falls etwas dazwischenkommt, sag mir bitte kurz Bescheid. Liebe Grüße";
+}
+async function copy(t,btn){
+  try{await navigator.clipboard.writeText(t);toast("Text kopiert – jetzt in WhatsApp einfügen")}
+  catch{sheet("Text zum Kopieren",'<textarea id="ct" readonly>'+esc(t)+'</textarea><p class="note">Text lange antippen und kopieren.</p>',el=>{const x=el.querySelector("#ct");x.focus();x.select()})}
+}
+const STD=[["Klassische Gesichtsbehandlung",75,69],["Ausreinigung",45,45],["Hydrafacial / Feuchtigkeitsbehandlung",60,89],["Augenbrauen zupfen & färben",20,22],["Wimpern färben",15,15],["Lash Lifting",60,59],["Waxing Oberlippe",10,9],["Waxing Beine komplett",45,45],["Maniküre",45,32],["Fußpflege (kosmetisch)",50,38]];
+async function stdPrices(){for(const [name,duration,price] of STD)await save("treatments",{name,duration,price});toast("Preisliste übernommen – Preise bitte anpassen")}
+const IDEAS=[
+ ["Instagram","Hautdetail ohne Gesicht","Nahaufnahme nach der Ausreinigung: so strahlt Haut nach 60 Minuten. Termine für diese Woche sind noch frei! #kosmetik #hautpflege #glowingskin"],
+ ["Instagram Story","Freie Termine","Kurzfristig frei: Donnerstag 14 Uhr und Freitag 10 Uhr. Einfach per Nachricht buchen! #kosmetikstudio #freietermine #beauty"],
+ ["Instagram","Wintertipp für trockene Haut","Heizungsluft trocknet die Haut aus. Mein Tipp: reichhaltigere Creme am Abend und viel trinken. #wintercare #trockenehaut #hautpflege"],
+ ["Instagram","Hinter den Kulissen","So sieht meine Kabine aus, bevor du kommst: frisch, ruhig, vorbereitet. Wohlfühlen beginnt hier. #behindthescenes #kosmetikerin #selbststaendig"],
+ ["Facebook","Gutschein-Erinnerung","Noch kein Geschenk? Ein Gutschein für eine Gesichtsbehandlung kommt immer an. Ab sofort im Studio erhältlich. #gutschein #geschenkidee #wellness"],
+ ["Instagram","Wimpern: warum Abstand wichtig ist","Zu frühes Lash Lifting schadet den Wimpern. Ich empfehle 6–8 Wochen Pause, damit sie gesund bleiben. #lashlifting #wimpern #lashcare"],
+ ["Instagram","Produkt der Woche","Mein Lieblingsprodukt gerade: [Produkt]. Warum? Es beruhigt gestresste Haut sofort. Gibt’s bei mir im Studio. #produkttipp #skincare #kosmetik"],
+ ["Google-Profil","Um Bewertung bitten","Danke an alle, die mir vertrauen! Wenn du zufrieden warst, freue ich mich über eine kurze Google-Bewertung. #danke #kundenliebe #kosmetikstudio"],
+ ["TikTok","10 Sekunden Augenbrauen","Vorher und nachher Augenbrauen zupfen & färben, im Zeitraffer. Wer will auch? #brows #augenbrauen #beforeafter"],
+ ["Instagram Story","Umfrage","Was wünschst du dir als Nächstes: Fußpflege-Tipps oder Hautpflege im Winter? Abstimmen! #umfrage #kosmetik #community"],
+ ["Instagram","Persönlich: wer ich bin","Hi, ich bin [Name]! Seit [Jahr] Kosmetikerin aus Leidenschaft. Das liebe ich an meinem Beruf … #kosmetikerin #über mich #selbstständig"],
+ ["Facebook","Fußpflege im Winter","Auch wenn die Füße jetzt in Socken stecken: Pflege lohnt sich gerade im Winter. Jetzt Termin sichern. #fusspflege #pediküre #winterpflege"],
+ ["Instagram","Mythos-Check","Mythos: Fettige Haut braucht keine Feuchtigkeit. Falsch! Warum, erkläre ich hier. #hautmythen #fettigehaut #skincaretips"],
+ ["WhatsApp Status","Last-Minute-Termin","Heute 16 Uhr ist noch etwas frei. Wer zuerst schreibt, bekommt den Termin! #lastminute #kosmetik"],
+ ["Instagram","Kundinnen-Stimme","„Endlich wieder Haut, in der ich mich wohlfühle.“ Danke für dein Vertrauen! (Mit Erlaubnis geteilt.) #kundenstimme #kosmetikstudio #zufrieden"],
+ ["Instagram Story","Mein Arbeitstag","Ein Tag im Studio: Kaffee, Kabine vorbereiten, erste Kundin um 9. Kommt mit! #dayinmylife #kosmetikerin #studioalltag"]
+].map(([platform,title,caption])=>({platform,title,caption}));
+const pickIdeas=()=>IDEAS.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).slice(0,4).map(x=>x[1]);
+
+// ---------- views ----------
+const rowAppt=(a,btns="")=>'<div class="row tap" data-act="appt" data-id="'+a.id+'"><span class="time">'+esc(a.time)+'</span><div class="main"><div class="t">'+esc(a.clientName||"?")+'</div><div class="s">'+esc(a.treatment||"")+(a.note?" · "+esc(a.note):"")+'</div></div>'+btns+'</div>';
+function apptsOn(d){return S.appts.filter(a=>a.date===d).sort((a,b)=>a.time.localeCompare(b.time))}
+function monthIn(m){return S.entries.filter(e=>e.kind==="in"&&(e.date||"").startsWith(m)).reduce((s,e)=>s+(+e.amount||0),0)}
+const low=()=>S.products.filter(p=>(+p.stock||0)<=(+p.min||0));
+
+function vHeute(){
+  const td=apptsOn(today()),tm=apptsOn(today(1));
+  const bdays=S.clients.filter(c=>c.birthday&&[0,1,2,3,4,5,6].some(i=>today(i).slice(5)===c.birthday.slice(5)));
+  const nextPost=S.posts.filter(p=>!p.done&&p.date>=today()).sort((a,b)=>a.date.localeCompare(b.date))[0];
+  let h='<p class="date">'+fdate(today(),{weekday:"long",day:"numeric",month:"long"})+'</p><div class="kpis"><div class="kpi"><b>'+td.length+'</b><span>Termine heute</span></div><div class="kpi"><b>'+eur(monthIn(today().slice(0,7))).replace(",00","")+'</b><span>Einnahmen '+fdate(today(),{month:"long"})+'</span></div><div class="kpi"><b>'+low().length+'</b><span>nachbestellen</span></div></div>';
+  if(mode==="local")h+='<div class="card" style="margin-top:16px;border-color:var(--warn)"><p><b>Nur auf diesem Gerät gespeichert</b></p><p class="note">Zum Testen okay. Für echte Daten bitte mit OneDrive verbinden – dann gibt es automatische Sicherungen.</p><div class="actions"><span></span><button data-act="settings">Einstellungen</button></div></div>';
+  else if(syncMsg.startsWith("⚠"))h+='<div class="card" style="margin-top:16px;border-color:var(--warn)"><p><b>'+esc(syncMsg.slice(2))+'</b></p><p class="note">Deine Änderungen sind auf diesem Gerät gesichert und werden nachgeholt.</p><div class="actions"><span></span>'+(syncMsg.includes("anmelden")?'<button class="primary" data-act="relogin">Bei Microsoft anmelden</button>':'<button data-act="retry">Nochmal versuchen</button>')+'</div></div>';
+  if(bioOffer)h+='<div class="card" style="margin-top:16px"><p><b>Schneller entsperren?</b></p><p class="note">Mit Face ID, Fingerabdruck oder Windows Hello statt Passwort – auf diesem Gerät.</p><div class="actions"><button class="ghost" data-act="bionot">Nein danke</button><button class="primary" data-act="bioyes">Einschalten</button></div></div>';
+  if(!S.treatments.length&&!S.clients.length)h+='<div class="card" style="margin-top:16px"><p><b>Willkommen!</b> So geht’s los:</p><p class="note">1. Preisliste anlegen (oder Vorschlag übernehmen)<br>2. Kundinnen eintragen<br>3. Termine anlegen – dann siehst du hier deinen Tag, Erinnerungen und Geburtstage.</p><div class="actions"><button class="primary" data-act="std">Preisliste-Vorschlag übernehmen</button></div></div>';
+  h+='<h2>Heute</h2>'+(td.length?'<div class="list">'+td.map(a=>rowAppt(a,a.paid?'<span class="pill ok">bezahlt</span>':'<button class="sm" data-act="pay" data-id="'+a.id+'">'+eur(a.price)+' kassieren</button>')).join("")+'</div>':'<div class="list"><div class="empty">Heute keine Termine. Neue Termine legst du mit <b>+ Termin</b> an.</div></div>');
+  h+='<h2>Erinnerungen für morgen</h2>'+(tm.length?'<div class="list">'+tm.map(a=>{const c=byId("clients",a.clientId),ph=(c?.phone||"").replace(/[^\d+]/g,"").replace(/^0/,"+49").replace(/^\+/,"");
+     return rowAppt(a,'<button class="sm" data-act="copy" data-id="'+a.id+'">Text kopieren</button>'+(ph?'<a class="btn sm" data-act="noop" target="_blank" rel="noopener" href="https://wa.me/'+ph+'?text='+encodeURIComponent(reminderText(a))+'">WhatsApp</a>':''))}).join("")+'</div>':'<div class="list"><div class="empty">Morgen keine Termine – nichts zu erinnern.</div></div>');
+  if(bdays.length)h+='<h2>Geburtstage diese Woche</h2><div class="list">'+bdays.map(c=>'<div class="row tap" data-act="client" data-id="'+c.id+'"><div class="main"><div class="t">'+esc(c.name)+'</div><div class="s">'+fdate(c.birthday,{day:"numeric",month:"long"})+' – Gutschein oder kleiner Gruß?</div></div><span class="pill acc">🎂</span></div>').join("")+'</div>';
+  if(low().length)h+='<h2>Nachbestellen</h2><div class="list">'+low().map(p=>'<div class="row tap" data-act="prod" data-id="'+p.id+'"><div class="main"><div class="t">'+esc(p.name)+'</div><div class="s">'+esc(p.brand||"")+'</div></div><span class="pill warn">noch '+(+p.stock||0)+'</span></div>').join("")+'</div>';
+  h+='<h2>Social Media</h2><div class="list">'+(nextPost?'<div class="row tap" data-act="post" data-id="'+nextPost.id+'"><div class="main"><div class="t">'+esc(nextPost.platform)+' · '+fdate(nextPost.date)+'</div><div class="s">'+esc(nextPost.idea.slice(0,110))+'</div></div></div>':'<div class="empty">Noch kein Beitrag geplant. Unter <b>Social</b> findest du Ideen.</div>')+'</div>';
+  return h;
+}
+function vTermine(){
+  const days=[...Array(14)].map((_,i)=>today(i));
+  const later=S.appts.filter(a=>a.date>today(13)).length, past=S.appts.filter(a=>a.date<today()).length;
+  let h='<p class="note">Die nächsten 14 Tage'+(later?' · '+later+' Termine später':'')+(past?' · '+past+' vergangene (in der Kundinnenkartei)':'')+'</p>';
+  days.forEach(d=>{const l=apptsOn(d);if(!l.length&&d!==today())return;
+    const mins=l.reduce((s,a)=>s+(+S.treatments.find(t=>t.name===a.treatment)?.duration||0),0);
+    h+='<div class="bar"><h2>'+(d===today()?"Heute":d===today(1)?"Morgen":fdate(d))+'</h2><span class="note">'+l.length+' Termin'+(l.length===1?"":"e")+(mins?" · "+Math.floor(mins/60)+" h "+String(mins%60).padStart(2,"0")+" Min.":"")+'</span></div>';
+    h+='<div class="list">'+(l.length?l.map(a=>rowAppt(a,'<span class="num">'+eur(a.price)+'</span>')).join(""):'<div class="empty">Frei.</div>')+'</div>'});
+  if(!S.appts.some(a=>a.date>=today()))h+='<div class="card" style="margin-top:12px"><p class="note">Hier erscheinen deine Termine nach Tagen sortiert, mit Behandlungsdauer pro Tag.</p></div>';
+  return h;
+}
+function vKunden(){
+  const l=S.clients.filter(c=>!q||(c.name+" "+(c.phone||"")).toLowerCase().includes(q.toLowerCase())).sort((a,b)=>a.name.localeCompare(b.name));
+  const last=id=>S.appts.filter(a=>a.clientId===id&&a.date<=today()).map(a=>a.date).sort().pop();
+  return '<input id="search" type="search" placeholder="Kundin suchen …" value="'+esc(q)+'" aria-label="Kundin suchen" style="margin-top:6px">'+
+   '<h2>'+S.clients.length+' Kundinnen</h2><div class="list">'+(l.length?l.map(c=>{const ld=last(c.id),weeks=ld?Math.floor((Date.now()-new Date(ld))/6048e5):null;
+    return '<div class="row tap" data-act="client" data-id="'+c.id+'"><div class="main"><div class="t">'+esc(c.name)+'</div><div class="s">'+[c.skin,ld&&"zuletzt "+fdate(ld,{day:"numeric",month:"short"})].filter(Boolean).map(esc).join(" · ")+'</div></div>'+(c.allergies?'<span class="pill warn">Allergie</span>':'')+(weeks>=8?'<span class="pill acc">'+weeks+' Wo.</span>':'')+'</div>'}).join(""):'<div class="empty">'+(q?"Keine Kundin gefunden.":"Noch keine Kundinnen. Mit <b>+ Kundin</b> legst du die erste Karteikarte an: Hauttyp, Allergien, Notizen und alle Behandlungen auf einen Blick.")+'</div>')+'</div>'+
+   (S.clients.length?'<p class="note">„Wo.“ = seit so vielen Wochen nicht mehr da – gute Gelegenheit, sich zu melden.</p>':'');
+}
+function vKasse(){
+  const e=S.entries.filter(x=>(x.date||"").startsWith(month)).sort((a,b)=>b.date.localeCompare(a.date));
+  const inn=e.filter(x=>x.kind==="in").reduce((s,x)=>s+(+x.amount||0),0),out=e.filter(x=>x.kind==="out").reduce((s,x)=>s+(+x.amount||0),0);
+  const ml=new Date(month+"-15").toLocaleDateString("de-DE",{month:"long",year:"numeric"});
+  let h='<div class="bar"><div class="month"><button class="sm" data-act="m-1" aria-label="Vormonat">‹</button><b>'+ml+'</b><button class="sm" data-act="m1" aria-label="Nächster Monat">›</button></div><button class="sm" data-act="csv">CSV für Steuerberater</button></div>';
+  h+='<div class="kpis"><div class="kpi"><b>'+eur(inn)+'</b><span>Einnahmen</span></div><div class="kpi"><b>'+eur(out)+'</b><span>Ausgaben</span></div><div class="kpi"><b style="color:'+(inn-out>=0?"var(--sage)":"var(--warn)")+'">'+eur(inn-out)+'</b><span>Gewinn</span></div></div>';
+  h+='<h2>Buchungen</h2><div class="list">'+(e.length?e.map(x=>'<div class="row tap" data-act="entry" data-id="'+x.id+'"><div class="main"><div class="t">'+esc(x.label)+'</div><div class="s">'+fdate(x.date,{day:"numeric",month:"short"})+' · '+esc(x.pay||"")+'</div></div><span class="num" style="color:'+(x.kind==="in"?"var(--sage)":"var(--warn)")+'">'+(x.kind==="in"?"+":"−")+eur(x.amount)+'</span></div>').join(""):'<div class="empty">Keine Buchungen in diesem Monat. Kassierte Termine und Produktverkäufe landen automatisch hier, Ausgaben trägst du mit <b>+ Buchung</b> ein.</div>')+'</div>';
+  h+='<div class="bar"><h2>Preisliste</h2><button class="sm" data-act="newtr">+ Behandlung</button></div><div class="list">'+(S.treatments.length?S.treatments.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(t=>'<div class="row tap" data-act="tr" data-id="'+t.id+'"><div class="main"><div class="t">'+esc(t.name)+'</div><div class="s">'+(+t.duration||0)+' Min.</div></div><span class="num">'+eur(t.price)+'</span></div>').join(""):'<div class="empty">Noch keine Preisliste. <button class="ghost" data-act="std">Vorschlag übernehmen</button></div>')+'</div>';
+  h+='<h2>Datensicherung</h2><div class="card"><p>'+esc(syncMsg||"–")+'</p><p class="note">'+(mode==="cloud"?"Automatisch bei jeder Änderung: aktueller Stand, vorheriger Stand und jeden Morgen eine Tagessicherung in OneDrive – alles verschlüsselt.":"Nur auf diesem Gerät. Bitte mit OneDrive verbinden.")+'</p><div class="actions"><span></span><button data-act="settings">Sicherungen & Einstellungen</button></div></div>';
+  return h;
+}
+function vLager(){
+  const l=S.products.slice().sort((a,b)=>((+a.stock<=+a.min)?0:1)-((+b.stock<=+b.min)?0:1)||a.name.localeCompare(b.name));
+  const val=S.products.reduce((s,p)=>s+(+p.stock||0)*(+p.cost||0),0);
+  return '<p class="note">'+S.products.length+' Produkte · Lagerwert (Einkauf) '+eur(val)+'</p><div class="list">'+(l.length?l.map(p=>{const lo=(+p.stock||0)<=(+p.min||0);
+    return '<div class="row"><div class="main tap" data-act="prod" data-id="'+p.id+'" style="cursor:pointer"><div class="t">'+esc(p.name)+'</div><div class="s">'+[p.brand,p.kind,p.price&&eur(p.price)].filter(Boolean).map(esc).join(" · ")+'</div></div>'+(lo?'<span class="pill warn">niedrig</span>':'')+
+    '<div class="stepper"><button data-act="dec" data-id="'+p.id+'" aria-label="Bestand minus">−</button><span class="num" style="min-width:24px;text-align:center">'+(+p.stock||0)+'</span><button data-act="inc" data-id="'+p.id+'" aria-label="Bestand plus">+</button></div>'+
+    (/Verkauf/.test(p.kind||"Verkauf")&&p.price?'<button class="sm" data-act="sell" data-id="'+p.id+'">Verkauf</button>':'')+'</div>'}).join(""):'<div class="empty">Noch keine Produkte. Trage Kabinenware (Wachs, Masken, Farbe) und Verkaufsprodukte ein – bei niedrigem Bestand erinnert dich die App.</div>')+'</div><p class="note">„Verkauf“ zieht ein Stück ab und bucht den Preis als Einnahme.</p>';
+}
+function vSocial(){
+  const l=S.posts.slice().sort((a,b)=>a.date.localeCompare(b.date));
+  const open=l.filter(p=>!p.done),weekDone=l.filter(p=>p.done&&p.date>=today(-6)).length;
+  let h='<div class="card" style="margin-top:6px"><p><b>Diese Woche: '+weekDone+' von 3 Beiträgen veröffentlicht</b></p><p class="note">Ein guter Rhythmus fürs Ein-Frau-Studio: 2–3 Beiträge pro Woche plus kurze Storys aus dem Alltag.</p></div>';
+  h+='<div class="bar"><h2>Geplant</h2></div><div class="list">'+(open.length?open.map(p=>'<div class="row"><input type="checkbox" id="pd_'+p.id+'" data-act="done" data-id="'+p.id+'" aria-label="Als veröffentlicht markieren" style="width:22px;height:22px;flex:none"><div class="main tap" data-act="post" data-id="'+p.id+'" style="cursor:pointer"><div class="t">'+esc(p.platform)+' · '+fdate(p.date)+(p.date<today()?' <span class="pill warn">überfällig</span>':'')+'</div><div class="s">'+esc(p.idea)+'</div></div><button class="sm" data-act="copypost" data-id="'+p.id+'">Kopieren</button></div>').join(""):'<div class="empty">Nichts geplant. Lass dir unten Ideen vorschlagen oder plane mit <b>+ Beitrag</b>.</div>')+'</div>';
+  h+='<div class="bar"><h2>Ideen</h2><button class="sm primary" data-act="ideas">'+(ideas.length?"Andere Ideen":"Ideen zeigen")+'</button></div>';
+  if(ideas.length)h+='<div class="list">'+ideas.map((x,i)=>'<div class="row"><div class="main"><div class="t">'+esc(x.title)+' <span class="pill acc">'+esc(x.platform)+'</span></div><div class="s">'+esc(x.caption)+'</div></div><button class="sm" data-act="take" data-i="'+i+'">Einplanen</button></div>').join("")+'</div>';
+  h+='<h2>Schnelle Tipps</h2><div class="card"><ul class="tips" style="margin:0;padding-left:18px"><li>Vorher/Nachher nur mit schriftlicher Einwilligung der Kundin – oder nur Haut-Detail ohne Gesicht.</li><li>Google-Unternehmensprofil pflegen: nach jedem Termin um eine Bewertung bitten.</li><li>Freie Termine diese Woche als Story posten – das füllt Lücken am schnellsten.</li><li>Gutscheine vor Weihnachten früh bewerben (ab Mitte November).</li></ul></div>';
+  return h;
+}
+const VIEWS={heute:[vHeute,"Heute","+ Termin",()=>editAppt({date:today()})],termine:[vTermine,"Termine","+ Termin",()=>editAppt({date:today()})],kunden:[vKunden,"Kundinnen","+ Kundin",()=>editClient()],kasse:[vKasse,"Kasse","+ Buchung",()=>editEntry()],lager:[vLager,"Lager","+ Produkt",()=>editProduct()],social:[vSocial,"Social Media","+ Beitrag",()=>editPost()]};
+
+function render(){
+  if(!V)return;
+  const [fn,title,fab]=VIEWS[tab];
+  document.getElementById("title").textContent=title;
+  document.getElementById("tabs").innerHTML=TABS.map(([k,l,svg])=>'<button data-tab="'+k+'"'+(k===tab?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+svg+'</svg>'+l+'</button>').join("");
+  const v=document.getElementById("view"), f=document.getElementById("fab");
+  if(!ready){v.innerHTML='<div class="empty">Studio wird geladen …</div>';f.hidden=true;return}
+  const hadFocus=document.activeElement?.id==="search", pos=document.activeElement?.selectionStart;
+  v.innerHTML=fn();
+  f.textContent=fab;f.hidden=false;
+  if(hadFocus){const s=document.getElementById("search");s.focus();s.setSelectionRange(pos,pos)}
+}
+
+// ---------- events ----------
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-tab]");if(t){tab=t.dataset.tab;render();window.scrollTo(0,0);return}
+  const a=e.target.closest("[data-act]");if(!a)return;
+  const id=a.dataset.id, act=a.dataset.act;
+  if(act!=="appt"&&act!=="client")e.stopPropagation();
+  ({
+    appt:()=>editAppt(byId("appts",id)), client:()=>showClient(byId("clients",id)), prod:()=>editProduct(byId("products",id)),
+    entry:()=>editEntry(byId("entries",id)), tr:()=>editTreatment(byId("treatments",id)), post:()=>editPost(byId("posts",id)),
+    pay:()=>checkout(byId("appts",id)), copy:()=>copy(reminderText(byId("appts",id))), sell:()=>sell(byId("products",id)),
+    inc:()=>{const p=byId("products",id);save("products",{...p,stock:(+p.stock||0)+1})},
+    dec:()=>{const p=byId("products",id);if((+p.stock||0)>0)save("products",{...p,stock:(+p.stock||0)-1})},
+    std:stdPrices, newtr:()=>editTreatment(), ideas:()=>{ideas=pickIdeas();render()},
+    settings:sheetSettings, relogin:login, retry:push,
+    bioyes:async()=>{try{await bioSetup();bioOffer=false;render();toast("Eingeschaltet")}catch(e){toast(e.code==="noprf"?"Dieses Gerät oder dieser Browser unterstützt das leider nicht.":"Abgebrochen.",4500);if(e.code==="noprf"){bioOffer=false;kset("bioNo",true);render()}}},
+    bionot:()=>{bioOffer=false;kset("bioNo",true);render()},
+    take:()=>{const x=ideas[+a.dataset.i];save("posts",{date:today(1),platform:x.platform,idea:x.title+": "+x.caption,done:false});ideas.splice(+a.dataset.i,1);toast("Für morgen eingeplant");render()},
+    done:()=>{const p=byId("posts",id);save("posts",{...p,done:true});toast("Super, veröffentlicht!")},
+    copypost:()=>copy(byId("posts",id).idea),
+    "m-1":()=>{const d=new Date(month+"-15");d.setMonth(d.getMonth()-1);month=iso(d).slice(0,7);render()},
+    "m1":()=>{const d=new Date(month+"-15");d.setMonth(d.getMonth()+1);month=iso(d).slice(0,7);render()},
+    csv:()=>{const e=S.entries.filter(x=>(x.date||"").startsWith(month)).sort((a,b)=>a.date.localeCompare(b.date));
+      dlFile("kasse-"+month+".csv","\ufeff"+["Datum;Art;Beschreibung;Zahlart;Betrag"].concat(e.map(x=>[x.date,x.kind==="in"?"Einnahme":"Ausgabe",'"'+String(x.label).replace(/"/g,'""')+'"',x.pay||"",(+x.amount||0).toFixed(2).replace(".",",")].join(";"))).join("\n"),"text/csv");toast("CSV-Datei gespeichert")}
+  })[act]?.();
+});
+document.addEventListener("input",e=>{if(e.target.id==="search"){q=e.target.value;render()}});
+document.getElementById("fab").onclick=()=>VIEWS[tab][3]();
+document.getElementById("gear").onclick=sheetSettings;
+
+
+// ===== Verschlüsselung (AES-GCM 256, Schlüssel aus Passwort per PBKDF2) =====
+// Ein zufälliger Datenschlüssel verschlüsselt die Daten. Er ist doppelt "eingepackt":
+// einmal mit dem Passwort, einmal mit dem Wiederherstellungsschlüssel.
+const te=new TextEncoder(), td=new TextDecoder();
+const APP_ID="kosmetikstudio";
+const rand=n=>crypto.getRandomValues(new Uint8Array(n));
+function b64(buf){const u=new Uint8Array(buf);let s="";for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)}
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const rawKey=b=>crypto.subtle.importKey("raw",b,"AES-GCM",false,["encrypt","decrypt"]);
+async function pwKey(pw,salt,iter){
+  const base=await crypto.subtle.importKey("raw",te.encode(pw),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+}
+async function seal(key,bytes){const iv=rand(12);return {iv:b64(iv),ct:b64(await crypto.subtle.encrypt({name:"AES-GCM",iv},key,bytes))}}
+async function unseal(key,o){return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},key,unb64(o.ct)))}
+
+const RK_ABC="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // ohne 0/O und 1/I, damit nichts verwechselt wird
+const normRK=s=>String(s).toUpperCase().replace(/[^A-Z0-9]/g,"");
+function genRK(){const r=rand(25);let s="";for(const b of r)s+=RK_ABC[b%32];return s.match(/.{5}/g).join("-")}
+const PW_ITER=600000, RK_ITER=200000;
+
+async function wrapWith(secret,iter,dekRaw){const salt=rand(16);return {salt:b64(salt),iter,...await seal(await pwKey(secret,salt,iter),dekRaw)}}
+async function unwrapWith(secret,slot){return unseal(await pwKey(secret,unb64(slot.salt),slot.iter),slot)}
+
+// Neuer Tresor: gibt Datenschlüssel, Kopf (eingepackte Schlüssel) und den Wiederherstellungsschlüssel zurück
+async function newVault(pw){
+  const dekRaw=rand(32), rk=genRK();
+  return {dekRaw,rk,hdr:{pw:await wrapWith(pw,PW_ITER,dekRaw),rk:await wrapWith(normRK(rk),RK_ITER,dekRaw)}};
+}
+const unlockPw=(hdr,pw)=>unwrapWith(pw,hdr.pw);          // wirft bei falschem Passwort
+const unlockRK=(hdr,rk)=>unwrapWith(normRK(rk),hdr.rk);  // wirft bei falschem Schlüssel
+async function changePw(hdr,dekRaw,newPw){return {...hdr,pw:await wrapWith(newPw,PW_ITER,dekRaw)}}
+
+function validData(d){return d&&typeof d==="object"&&["clients","appts","treatments","products","entries","posts"].every(k=>Array.isArray(d[k]))}
+async function encryptFile(data,dek,hdr){
+  return JSON.stringify({app:APP_ID,v:1,saved:new Date().toISOString(),pw:hdr.pw,rk:hdr.rk,...await seal(dek,te.encode(JSON.stringify(data)))});
+}
+// Wirft, wenn die Datei kaputt ist oder nicht zu diesem Schlüssel gehört
+async function decryptFile(text,dek){
+  const j=JSON.parse(text);
+  if(j.app!==APP_ID||!j.iv||!j.ct)throw new Error("keine Studio-Datei");
+  const data=JSON.parse(td.decode(await unseal(dek,j)));
+  if(!validData(data))throw new Error("Inhalt unvollständig");
+  return {data,saved:j.saved,hdr:{pw:j.pw,rk:j.rk}};
+}
+const headerOf=text=>{const j=JSON.parse(text);if(j.app!==APP_ID||!j.pw)throw new Error("keine Studio-Datei");return {pw:j.pw,rk:j.rk}};
+
+// Welche Datei wird beim Start geladen? Reihenfolge der Kandidaten zählt;
+// die erste, die sich entschlüsseln lässt, gewinnt. dec wirft bei Defekt.
+async function pickReadable(candidates,dec){
+  for(const c of candidates){
+    if(!c||!c.text)continue;
+    try{return {...c,result:await dec(c.text)}}catch{}
+  }
+  return null;
+}
+// ===== Ende Verschlüsselung =====
+
+// ===== Speicher auf diesem Gerät (IndexedDB) =====
+const idb=new Promise((res,rej)=>{const r=indexedDB.open("kosmetikstudio",1);r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+async function kv(mode,fn){const d=await idb;return new Promise((res,rej)=>{const t=d.transaction("kv",mode);const r=fn(t.objectStore("kv"));t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)})}
+const kget=k=>kv("readonly",s=>s.get(k)), kset=(k,v)=>kv("readwrite",s=>s.put(v,k)), kdel=k=>kv("readwrite",s=>s.delete(k)), kkeys=()=>kv("readonly",s=>s.getAllKeys());
+
+// ===== Microsoft-Anmeldung (OAuth mit PKCE, nur Zugriff auf den App-Ordner in OneDrive) =====
+const AUTH="https://login.microsoftonline.com/consumers/oauth2/v2.0";
+const SCOPE="Files.ReadWrite.AppFolder offline_access";
+const REDIRECT=location.origin+location.pathname.replace(/index\.html$/,"");
+const b64url=b=>b64(b).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+let tok=null;
+async function login(){
+  const verifier=b64url(rand(32)), state=b64url(rand(16));
+  const challenge=b64url(await crypto.subtle.digest("SHA-256",te.encode(verifier)));
+  sessionStorage.setItem("pkce",JSON.stringify({verifier,state}));
+  location.href=AUTH+"/authorize?"+new URLSearchParams({client_id:CLIENT_ID,response_type:"code",redirect_uri:REDIRECT,scope:SCOPE,code_challenge:challenge,code_challenge_method:"S256",state,response_mode:"query"});
+}
+async function tokenRequest(body){
+  const r=await fetch(AUTH+"/token",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({client_id:CLIENT_ID,scope:SCOPE,...body})});
+  const j=await r.json();
+  if(!r.ok)throw new Error(j.error_description||"Anmeldung fehlgeschlagen");
+  tok={access:j.access_token,exp:Date.now()+(j.expires_in-120)*1000,refresh:j.refresh_token||tok?.refresh};
+  await kset("tok",tok);
+}
+async function handleRedirect(){
+  const p=new URLSearchParams(location.search);
+  if(!p.has("code")&&!p.has("error"))return;
+  history.replaceState(null,"",REDIRECT);
+  if(p.has("error"))throw new Error("Microsoft-Anmeldung abgebrochen: "+(p.get("error_description")||p.get("error")));
+  const s=JSON.parse(sessionStorage.getItem("pkce")||"{}");sessionStorage.removeItem("pkce");
+  if(!s.state||s.state!==p.get("state"))throw new Error("Anmeldung ungültig – bitte nochmal versuchen.");
+  await tokenRequest({grant_type:"authorization_code",code:p.get("code"),code_verifier:s.verifier,redirect_uri:REDIRECT});
+  if(await kget("mode")==="local")await kset("pending",true); // Daten vom Gerät nach OneDrive übernehmen
+  await kset("mode","cloud");
+}
+// Microsoft gibt Web-Apps eine Anmeldung für 24 Stunden; danach einmal neu anmelden (meist ohne Passwort).
+async function accessToken(){
+  tok=tok||await kget("tok");
+  if(tok?.access&&Date.now()<tok.exp)return tok.access;
+  if(!tok?.refresh)return null;
+  try{await tokenRequest({grant_type:"refresh_token",refresh_token:tok.refresh});return tok.access}
+  catch{tok=null;await kdel("tok");return null}
+}
+
+// ===== Ablage: OneDrive (Cloud) oder nur dieses Gerät (Local) – gleiche Schnittstelle =====
+const MAIN="studio-daten.enc", PREV="studio-daten-vorher.enc", BK="Sicherungen/";
+const err=(code,msg)=>Object.assign(new Error(msg||code),{code});
+const GRAPH="https://graph.microsoft.com/v1.0/me/drive/special/approot:/";
+async function gfetch(path,opt={}){
+  const t=await accessToken();if(!t)throw err("auth","Bitte bei Microsoft neu anmelden");
+  if(!navigator.onLine)throw err("offline");
+  let r;try{r=await fetch(GRAPH+path,{...opt,headers:{...(opt.headers||{}),Authorization:"Bearer "+t}})}catch{throw err("offline")}
+  if(r.status===401){tok=null;await kdel("tok");throw err("auth","Bitte bei Microsoft neu anmelden")}
+  return r;
+}
+const Cloud={
+  async get(name){
+    const r=await gfetch(encodeURI(name));
+    if(r.status===404)return null;
+    if(!r.ok)throw err("http","OneDrive antwortet nicht ("+r.status+")");
+    const m=await r.json();
+    let d;try{d=await fetch(m["@microsoft.graph.downloadUrl"])}catch{d=null}
+    if(!d||!d.ok)d=await gfetch(encodeURI(name)+":/content");
+    if(!d.ok)throw err("http","Datei konnte nicht geladen werden ("+d.status+")");
+    return {text:await d.text(),etag:m.eTag};
+  },
+  async head(name){const r=await gfetch(encodeURI(name)+"?$select=eTag");if(r.status===404)return null;if(!r.ok)throw err("http");return (await r.json()).eTag},
+  // shortcut: einfacher Upload bis 250 MB; die Datei ist nach Jahren noch wenige MB
+  async put(name,text,{ifMatch,noOverwrite}={}){
+    const r=await gfetch(encodeURI(name)+":/content"+(noOverwrite?"?@microsoft.graph.conflictBehavior=fail":""),{method:"PUT",headers:{"Content-Type":"text/plain",...(ifMatch?{"If-Match":ifMatch}:{})},body:text});
+    if(r.status===412)throw err("conflict");
+    if(r.status===409)throw err("exists");
+    if(!r.ok)throw err("http","Speichern in OneDrive fehlgeschlagen ("+r.status+")");
+    return (await r.json()).eTag;
+  },
+  async list(){const r=await gfetch("Sicherungen:/children?$select=name&$top=999");if(r.status===404)return [];if(!r.ok)throw err("http");return (await r.json()).value.map(x=>BK+x.name)}
+};
+const Local={
+  async get(name){const t=await kget("b:"+name);return t?{text:t,etag:"local"}:null},
+  async head(name){return (await kget("b:"+name))?"local":null},
+  async put(name,text,{noOverwrite}={}){if(noOverwrite&&await kget("b:"+name))throw err("exists");await kset("b:"+name,text);return "local"},
+  async list(){return (await kkeys()).filter(k=>String(k).startsWith("b:"+BK)).map(k=>k.slice(2))}
+};
+
+// ===== Abgleich =====
+let mode=null, Store=Local, V=null, remoteText=null, etag=null, rev=0, syncing=false, pushTimer=null, lastSync=null, syncMsg="", notes=[];
+const stamp=()=>new Date().toISOString().slice(0,16).replace(/[:T]/g,"-");
+function setData(d){KEYS.forEach(k=>S[k]=Array.isArray(d[k])?d[k]:[])}
+function setSync(m){syncMsg=m;const el=document.getElementById("sync");if(el)el.textContent=m}
+function dirty(){rev++;kset("pending",true);clearTimeout(pushTimer);pushTimer=setTimeout(push,600);setSync("Speichert …")}
+
+async function push(){
+  if(!V)return;
+  if(syncing){clearTimeout(pushTimer);pushTimer=setTimeout(push,800);return}
+  syncing=true;const myRev=rev;
+  try{
+    const text=await encryptFile(S,V.dek,V.hdr);
+    // Gegenprobe: nur speichern, was sich nachweislich wieder öffnen lässt
+    const back=await decryptFile(text,V.dek);
+    if(JSON.stringify(back.data)!==JSON.stringify(S))throw err("verify","Prüfung fehlgeschlagen – nicht gespeichert");
+    await kset("file",text);
+    if(remoteText){
+      // Morgenstand: vor der ersten Änderung des Tages den bisherigen Stand als Tagessicherung ablegen
+      if(await kget("daily")!==today()){
+        try{await Store.put(BK+"studio-"+today()+".enc",remoteText,{noOverwrite:true})}catch(e){if(e.code!=="exists")throw e}
+        await kset("daily",today());
+      }
+      await Store.put(PREV,remoteText);
+    }
+    let newTag;
+    try{newTag=await Store.put(MAIN,text,etag?{ifMatch:etag}:{noOverwrite:mode==="cloud"})}
+    catch(e){
+      if(e.code!=="conflict"&&e.code!=="exists")throw e;
+      // Zwischendurch woanders gespeichert: diesen Stand aufheben, dann unseren speichern
+      const other=await Store.get(MAIN);
+      if(other){await Store.put(BK+"konflikt-"+stamp()+".enc",other.text);notes.push("Auf einem anderen Gerät wurde parallel gespeichert. Dieser Stand liegt unter „Sicherungen“ als Konflikt-Datei.")}
+      newTag=await Store.put(MAIN,text,other?{ifMatch:other.etag}:{});
+    }
+    etag=newTag;remoteText=text;await kset("etag",etag);
+    if(rev===myRev)await kset("pending",false);
+    lastSync=new Date();setSync((mode==="cloud"?"✓ In OneDrive gespeichert ":"✓ Gespeichert ")+lastSync.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}));
+  }catch(e){
+    setSync(e.code==="auth"?"⚠ Neu anmelden nötig":e.code==="offline"?"Offline – auf dem Gerät gesichert":"⚠ "+(e.message||"Nicht gespeichert"));
+    if(e.code==="verify")toast(e.message);
+    if(e.code!=="auth"){clearTimeout(pushTimer);pushTimer=setTimeout(push,30000)}
+  }finally{syncing=false}
+}
+
+// Beim Entsperren: neuesten lesbaren Stand finden. Ist eine Datei beschädigt, greift die nächste.
+async function loadData(){
+  notes=[];
+  const pending=!!(await kget("pending")), localText=await kget("file");
+  let remote=null;
+  if(mode==="cloud"){try{remote=await Store.get(MAIN)}catch(e){notes.push(e.code==="auth"?"Nicht bei Microsoft angemeldet – zeige Stand dieses Geräts.":"OneDrive gerade nicht erreichbar – zeige Stand dieses Geräts.")}}
+  else remote=await Store.get(MAIN);
+  etag=remote?remote.etag:await kget("etag");
+  const dec=t=>decryptFile(t,V.dek);
+  const local={text:localText,src:"local"}, rem=remote&&{text:remote.text,src:"remote"};
+  let pick=await pickReadable(pending?[local,rem]:[rem,local],dec);
+  if(!pick&&(remote||localText)){
+    let names=[];try{names=(await Store.list()).filter(n=>/studio-\d/.test(n)).sort().reverse()}catch{}
+    const more=[];for(const n of [PREV,...names]){try{const r=await Store.get(n);if(r)more.push({text:r.text,src:n})}catch{}}
+    pick=await pickReadable(more,dec);
+    if(pick)notes.push("Der aktuelle Stand war beschädigt. Geladen wurde: "+bkLabel(pick.src)+".");
+  }
+  if(!pick){
+    if(remote||localText)throw new Error("Keine lesbare Datei gefunden. Bitte eine Sicherung unter Einstellungen laden.");
+    setData({});remoteText=null;return; // ganz neues Studio
+  }
+  setData(pick.result.data);
+  if(pick.src==="remote"){remoteText=remote.text;await kset("file",remote.text);await kset("etag",etag)}
+  else{
+    let remoteOk=false;try{if(rem)remoteOk=!!(await dec(rem.text))}catch{}
+    remoteText=remoteOk?remote.text:pick.text;
+    if(pick.src==="local"&&pending&&remote&&remoteOk&&remote.etag!==await kget("etag")){
+      await Store.put(BK+"konflikt-"+stamp()+".enc",remote.text);
+      notes.push("Auf einem anderen Gerät gab es Änderungen, während dieses offline war. Die sind unter „Sicherungen“ als Konflikt-Datei aufgehoben.");
+    }
+    if(pending||pick.src!=="local"||(rem&&!remoteOk))dirty();
+  }
+}
+// Beim Zurückkehren in die App den neuesten Stand holen
+async function pull(){
+  if(mode!=="cloud"||!V||syncing||await kget("pending"))return;
+  try{const e=await Store.head(MAIN);if(!e||e===etag)return;
+    const r=await Store.get(MAIN), d=await decryptFile(r.text,V.dek);
+    setData(d.data);remoteText=r.text;etag=r.etag;await kset("file",r.text);await kset("etag",etag);render();toast("Neuester Stand geladen");
+  }catch{}
+}
+function bkLabel(n){
+  if(n===PREV)return "vorheriger Stand";
+  if(n==="local")return "Stand dieses Geräts";
+  let m=n.match(/studio-(\d{4}-\d\d-\d\d)/);if(m)return "Morgenstand "+fdate(m[1],{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+  m=n.match(/(konflikt|vor-wiederherstellung)-(\d{4}-\d\d-\d\d)-(\d\d)-(\d\d)/);
+  if(m)return (m[1]==="konflikt"?"Konflikt-Stand ":"Vor Wiederherstellung ")+fdate(m[2],{day:"numeric",month:"short"})+", "+m[3]+":"+m[4]+" Uhr";
+  return n.replace(BK,"");
+}
+
+// ===== Face ID / Fingerabdruck / Windows Hello (WebAuthn mit PRF) =====
+const PRF_SALT=te.encode("kosmetikstudio-entsperren-v1");
+const bioPossible=()=>!!(window.PublicKeyCredential&&navigator.credentials);
+async function bioSecret(rawId){
+  const a=await navigator.credentials.get({publicKey:{challenge:rand(32),allowCredentials:[{type:"public-key",id:rawId}],userVerification:"required",timeout:60000,extensions:{prf:{eval:{first:PRF_SALT}}}}});
+  const r=a.getClientExtensionResults().prf?.results?.first;
+  if(!r)throw err("noprf");
+  return new Uint8Array(r).slice(0,32);
+}
+async function bioSetup(){
+  const cred=await navigator.credentials.create({publicKey:{rp:{name:"Mein Kosmetikstudio"},user:{id:rand(16),name:"Kosmetikstudio",displayName:"Mein Kosmetikstudio"},challenge:rand(32),
+    pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],timeout:60000,
+    authenticatorSelection:{authenticatorAttachment:"platform",userVerification:"required",residentKey:"preferred"},extensions:{prf:{eval:{first:PRF_SALT}}}}});
+  const ext=cred.getClientExtensionResults().prf;
+  if(ext&&ext.enabled===false)throw err("noprf");
+  const secret=ext?.results?.first?new Uint8Array(ext.results.first).slice(0,32):await bioSecret(cred.rawId);
+  await kset("bio",{id:b64(cred.rawId),...await seal(await rawKey(secret),V.dekRaw)});
+}
+async function bioUnlock(){const b=await kget("bio");return unseal(await rawKey(await bioSecret(unb64(b.id))),b)}
+
+// ===== Startbildschirme =====
+let hdr=null, hasBio=false, bioOffer=false;
+function screen(html){
+  document.getElementById("title").textContent="Mein Kosmetikstudio";
+  document.getElementById("sync").textContent="";
+  document.querySelector("nav").hidden=true;document.getElementById("fab").hidden=true;document.getElementById("gear").hidden=true;
+  document.getElementById("view").innerHTML='<div class="gate">'+html+'</div>';
+  document.querySelector("#view input")?.focus();
+}
+const pwField=(id,label,ac="current-password")=>'<label class="f" for="'+id+'">'+label+'<input id="'+id+'" type="password" autocomplete="'+ac+'" required minlength="8"></label>';
+function busy(btn,txt){btn.disabled=true;btn.dataset.t=btn.textContent;btn.textContent=txt}
+function unbusy(btn){btn.disabled=false;btn.textContent=btn.dataset.t}
+function gateMsg(m){const e=document.getElementById("gmsg");if(e){e.textContent=m;e.hidden=!m}}
+
+function sSetup(){
+  screen('<h2>Willkommen</h2><p>Deine Daten werden verschlüsselt. Nur wer dein Passwort kennt, kann sie lesen – auch Microsoft nicht.</p>'+
+    (CLIENT_ID?'<button class="primary wide" id="gcloud">Mit OneDrive verbinden</button><p class="note">Empfohlen: Handy, Tablet und PC zeigen dann immer denselben Stand, mit automatischen Sicherungen.</p>':
+      '<p class="note">OneDrive ist noch nicht eingerichtet (siehe Anleitung, Schritt 2).</p>')+
+    '<button class="wide" id="glocal">Erstmal nur auf diesem Gerät testen</button><p class="note">Später jederzeit mit OneDrive verbindbar – die Einträge werden dann übernommen.</p>');
+  document.getElementById("gcloud")?.addEventListener("click",login);
+  document.getElementById("glocal").onclick=async()=>{await kset("mode","local");boot()};
+}
+function sNew(){
+  screen('<h2>Neues Studio anlegen</h2><p>Lege ein Passwort fest (mindestens 8 Zeichen). Du brauchst es einmal pro Gerät, danach reicht Face ID oder Fingerabdruck.</p><form class="form" id="gf">'+
+    pwField("p1","Passwort","new-password")+pwField("p2","Passwort wiederholen","new-password")+'<p id="gmsg" class="gerr" hidden></p><button class="primary wide">Weiter</button></form>');
+  document.getElementById("gf").onsubmit=async e=>{e.preventDefault();const p1=e.target.p1.value,p2=e.target.p2.value,b=e.target.querySelector("button");
+    if(p1.length<8)return gateMsg("Bitte mindestens 8 Zeichen.");if(p1!==p2)return gateMsg("Die Passwörter stimmen nicht überein.");
+    busy(b,"Verschlüssele …");const v=await newVault(p1);V={dekRaw:v.dekRaw,dek:await rawKey(v.dekRaw),hdr:v.hdr};setData({});remoteText=null;etag=null;sRK(v.rk)};
+}
+function sRK(rk){
+  screen('<h2>Dein Wiederherstellungsschlüssel</h2><p>Damit kommst du an deine Daten, falls du das Passwort vergisst. <b>Niemand sonst kann es zurücksetzen.</b> Drucke ihn aus oder schreib ihn ab und bewahre ihn sicher auf (z. B. bei den Geschäftsunterlagen).</p>'+
+    '<div id="rkprint" class="rk"><small>Mein Kosmetikstudio · Wiederherstellungsschlüssel · erstellt '+fdate(today(),{day:"numeric",month:"long",year:"numeric"})+'</small><b>'+rk+'</b></div>'+
+    '<div class="actions"><button id="rkc">Kopieren</button><button id="rkp">Drucken</button></div>'+
+    '<label class="check"><input type="checkbox" id="rkok"> Ich habe den Schlüssel sicher notiert oder ausgedruckt.</label><button class="primary wide" id="rkgo" disabled>Studio öffnen</button>');
+  document.getElementById("rkc").onclick=()=>copy(rk);
+  document.getElementById("rkp").onclick=()=>window.print();
+  document.getElementById("rkok").onchange=e=>document.getElementById("rkgo").disabled=!e.target.checked;
+  document.getElementById("rkgo").onclick=async e=>{busy(e.target,"Speichere …");bioOffer=bioPossible();rev++;await kset("pending",true);await push();startApp()};
+}
+async function sLock(){
+  hasBio=!!(await kget("bio"))&&bioPossible();
+  screen('<h2>Entsperren</h2>'+(hasBio?'<button class="primary wide" id="gbio">Mit Face ID / Fingerabdruck entsperren</button><p class="note center">oder mit Passwort:</p>':'')+
+    '<form class="form" id="gf">'+pwField("p1","Passwort")+'<p id="gmsg" class="gerr" hidden></p><button class="'+(hasBio?"":"primary ")+'wide">Entsperren</button></form><button class="ghost wide" id="gforgot">Passwort vergessen?</button>');
+  const ok=async dekRaw=>{V={dekRaw,dek:await rawKey(dekRaw),hdr};bioOffer=bioPossible()&&!hasBio&&!(await kget("bioNo"));try{await loadData();startApp()}catch(e){gateMsg(e.message);V=null}};
+  document.getElementById("gbio")?.addEventListener("click",async e=>{const b=e.target;busy(b,"Warte auf Bestätigung …");
+    try{await ok(await bioUnlock())}catch{unbusy(b);gateMsg("Hat nicht geklappt – bitte Passwort eingeben.")}});
+  document.getElementById("gf").onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector("button");busy(b,"Entsperre …");
+    let dekRaw;try{dekRaw=await unlockPw(hdr,e.target.p1.value)}catch{unbusy(b);return gateMsg("Das Passwort stimmt nicht.")}
+    await ok(dekRaw);unbusy(b)};
+  document.getElementById("gforgot").onclick=sRecover;
+}
+function sRecover(){
+  screen('<h2>Passwort zurücksetzen</h2><p>Gib deinen Wiederherstellungsschlüssel ein und lege ein neues Passwort fest.</p><form class="form" id="gf">'+
+    '<label class="f" for="rk1">Wiederherstellungsschlüssel<input id="rk1" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXX" required></label>'+
+    pwField("p1","Neues Passwort","new-password")+pwField("p2","Neues Passwort wiederholen","new-password")+'<p id="gmsg" class="gerr" hidden></p><button class="primary wide">Passwort ändern</button></form><button class="ghost wide" id="gback">Zurück</button>');
+  document.getElementById("gback").onclick=sLock;
+  document.getElementById("gf").onsubmit=async e=>{e.preventDefault();const f=e.target,b=f.querySelector("button");
+    if(f.p1.value.length<8)return gateMsg("Bitte mindestens 8 Zeichen.");if(f.p1.value!==f.p2.value)return gateMsg("Die Passwörter stimmen nicht überein.");
+    busy(b,"Prüfe …");let dekRaw;try{dekRaw=await unlockRK(hdr,f.rk1.value)}catch{unbusy(b);return gateMsg("Der Schlüssel stimmt nicht. Bitte genau prüfen.")}
+    V={dekRaw,dek:await rawKey(dekRaw),hdr:await changePw(hdr,dekRaw,f.p1.value)};
+    try{await loadData()}catch(x){unbusy(b);return gateMsg(x.message)}
+    dirty();startApp();toast("Neues Passwort gespeichert")};
+}
+function sError(msg){
+  screen('<h2>Etwas hat nicht geklappt</h2><p class="gerr">'+esc(msg)+'</p><button class="primary wide" id="gretry">Nochmal versuchen</button>'+(mode==="cloud"&&CLIENT_ID?'<button class="wide" id="glogin">Bei Microsoft anmelden</button>':''));
+  document.getElementById("gretry").onclick=()=>location.reload();
+  document.getElementById("glogin")?.addEventListener("click",login);
+}
+function startApp(){
+  document.querySelector("nav").hidden=false;document.getElementById("gear").hidden=false;
+  ready=true;render();setSync(syncMsg||(mode==="cloud"?"OneDrive":"Nur dieses Gerät"));
+  if(notes.length)notes.splice(0).forEach((n,i)=>setTimeout(()=>toast(n,6000),i*6200));
+  if(mode==="cloud"&&!remoteText&&!rev)dirty();
+}
+
+async function boot(){
+  try{navigator.storage?.persist?.()}catch{}
+  try{await handleRedirect()}catch(e){return sError(e.message)}
+  mode=await kget("mode");
+  if(!mode)return sSetup();
+  Store=mode==="cloud"?Cloud:Local;
+  if(mode==="cloud"&&!(await accessToken())&&navigator.onLine&&!sessionStorage.getItem("triedLogin")){sessionStorage.setItem("triedLogin","1");return login()}
+  let text=await kget("file");
+  if(mode==="cloud"){try{const r=await Store.get(MAIN);if(r)text=r.text}catch(e){if(!text)return sError(e.code==="offline"?"Kein Internet. Beim ersten Start auf diesem Gerät wird eine Verbindung zu OneDrive gebraucht.":e.message)}}
+  if(!text)return sNew();
+  try{hdr=headerOf(text)}catch{
+    const p=await Store.get(PREV).catch(()=>null);try{hdr=headerOf(p.text)}catch{return sError("Die Datei in OneDrive ist beschädigt. Bitte unter Einstellungen eine Sicherung laden.")}
+  }
+  sLock();
+}
+
+// Nach 10 Minuten im Hintergrund automatisch sperren
+let hiddenAt=Date.now();
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){hiddenAt=Date.now();if(pushTimer&&V){clearTimeout(pushTimer);push()}return}
+  if(V&&Date.now()-hiddenAt>10*60*1000){sessionStorage.removeItem("noAutoBio");location.reload();return}
+  pull();
+});
+window.addEventListener("online",()=>{if(V)push()});
+window.addEventListener("pagehide",()=>{if(pushTimer&&V){clearTimeout(pushTimer);push()}});
+
+// ===== Einstellungen & Sicherungen =====
+function dlFile(name,text,type){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+}
+async function sheetSettings(){
+  const bio=!!(await kget("bio"));
+  sheet("Einstellungen",
+    '<div class="card"><p><b>'+(mode==="cloud"?"Mit OneDrive verbunden":"Nur auf diesem Gerät gespeichert")+'</b></p><p class="note">'+esc(syncMsg)+'</p>'+
+    (mode==="cloud"?'<p class="note">Bei jeder Änderung wird gespeichert: aktueller Stand, vorheriger Stand und jeden Morgen eine Tagessicherung. Alles verschlüsselt.</p>':'<p class="note">Achtung: Geht das Gerät verloren oder wird der Browser-Speicher gelöscht, sind die Daten weg. Bitte mit OneDrive verbinden.</p>')+'</div>'+
+    '<div class="menu">'+
+    '<button data-s="bk">Sicherungen ansehen & wiederherstellen</button>'+
+    '<button data-s="exp">Sicherungsdatei herunterladen</button>'+
+    '<button data-s="imp">Sicherungsdatei laden</button>'+
+    (bioPossible()?'<button data-s="bio">'+(bio?"Face ID / Fingerabdruck auf diesem Gerät ausschalten":"Face ID / Fingerabdruck einschalten")+'</button>':'')+
+    '<button data-s="pw">Passwort ändern</button>'+
+    (mode==="local"&&CLIENT_ID?'<button data-s="cloud" class="primary">Mit OneDrive verbinden</button>':'')+
+    '<button data-s="lock">Jetzt sperren</button></div>',
+    el=>el.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>({
+      bk:sheetBackups,
+      exp:async()=>{const t=await kget("file");dlFile("kosmetikstudio-sicherung-"+today()+".enc",t,"application/octet-stream");toast("Datei ist verschlüsselt – zum Öffnen braucht es dein Passwort")},
+      imp:sheetImport,
+      bio:async()=>{if(bio){await kdel("bio");toast("Ausgeschaltet");closeSheet();return}
+        try{await bioSetup();toast("Eingeschaltet – beim nächsten Öffnen genügt Face ID / Fingerabdruck");closeSheet()}
+        catch(e){toast(e.code==="noprf"?"Dieses Gerät oder dieser Browser unterstützt das leider nicht.":"Abgebrochen.",4500)}},
+      pw:sheetPw, cloud:login,
+      lock:()=>{sessionStorage.setItem("noAutoBio","1");location.reload()}
+    })[b.dataset.s]()));
+}
+async function restoreText(text,label){
+  let d;try{d=await decryptFile(text,V.dek)}catch{toast("Diese Datei lässt sich nicht öffnen (beschädigt oder aus einem anderen Studio).",5000);return}
+  try{await Store.put(BK+"vor-wiederherstellung-"+stamp()+".enc",await encryptFile(S,V.dek,V.hdr))}catch{}
+  setData(d.data);dirty();closeSheet();render();toast(label+" wiederhergestellt");
+}
+async function sheetBackups(){
+  sheet("Sicherungen",'<p class="note">Lade …</p>');
+  let names=[];try{names=(await Store.list()).sort((a,b)=>(b.match(/\d{4}-\d\d-\d\d.*/)||[""])[0].localeCompare((a.match(/\d{4}-\d\d-\d\d.*/)||[""])[0]))}catch(e){sheet("Sicherungen",'<p class="gerr">'+esc(e.message||"OneDrive nicht erreichbar")+'</p>');return}
+  const all=[PREV,...names];
+  sheet("Sicherungen",'<p class="note">Tippe auf einen Stand und bestätige. Der jetzige Stand wird vorher selbst noch gesichert.</p><div class="list">'+
+    all.map((n,i)=>'<div class="row"><div class="main"><div class="t">'+esc(bkLabel(n))+'</div></div><button class="sm" data-i="'+i+'">Wiederherstellen</button></div>').join("")+'</div>',
+    el=>el.querySelectorAll("[data-i]").forEach(b=>b.onclick=async()=>{
+      if(!b.dataset.c){b.dataset.c=1;b.textContent="Wirklich?";return}
+      busy(b,"Lade …");const n=all[+b.dataset.i];
+      try{const r=await Store.get(n);if(!r)throw 0;await restoreText(r.text,bkLabel(n))}catch{unbusy(b);toast("Konnte nicht geladen werden.")}
+    }));
+}
+function sheetImport(){
+  sheet("Sicherungsdatei laden",'<p class="note">Wähle eine .enc-Datei, die du mit „Sicherungsdatei herunterladen“ gespeichert hast.</p><input type="file" id="impf" accept=".enc,application/octet-stream"><div class="actions"><span></span><button id="impgo" class="primary" disabled>Wiederherstellen</button></div>',el=>{
+    let text=null;el.querySelector("#impf").onchange=async e=>{text=await e.target.files[0]?.text();el.querySelector("#impgo").disabled=!text};
+    el.querySelector("#impgo").onclick=()=>restoreText(text,"Sicherungsdatei");
+  });
+}
+function sheetPw(){
+  sheet("Passwort ändern",'<form class="form" id="pwf">'+pwField("op","Bisheriges Passwort")+pwField("p1","Neues Passwort","new-password")+pwField("p2","Neues Passwort wiederholen","new-password")+'<p id="gmsg" class="gerr" hidden></p><div class="actions"><span></span><button class="primary">Ändern</button></div></form>',el=>{
+    el.querySelector("#pwf").onsubmit=async e=>{e.preventDefault();const f=e.target,b=f.querySelector("button");
+      if(f.p1.value.length<8)return gateMsg("Bitte mindestens 8 Zeichen.");if(f.p1.value!==f.p2.value)return gateMsg("Die neuen Passwörter stimmen nicht überein.");
+      busy(b,"Ändere …");try{await unlockPw(V.hdr,f.op.value)}catch{unbusy(b);return gateMsg("Das bisherige Passwort stimmt nicht.")}
+      V.hdr=await changePw(V.hdr,V.dekRaw,f.p1.value);dirty();closeSheet();toast("Passwort geändert – gilt ab jetzt auf allen Geräten")};
+  });
+}
+
+boot();
+</script>
+</body>
+</html>

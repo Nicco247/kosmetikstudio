@@ -1,0 +1,11 @@
+{
+  "name": "Mein Kosmetikstudio",
+  "short_name": "Studio",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F5F3F7",
+  "theme_color": "#F5F3F7",
+  "lang": "de",
+  "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }]
+}
