@@ -52,7 +52,8 @@ h2{font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--go
 .row .main{flex:1;min-width:0}
 .row .t{font-weight:600;overflow-wrap:anywhere}
 .row .s{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
-.time{font-variant-numeric:tabular-nums;font-weight:700;width:46px;flex:none;color:var(--accent)}
+.time{font-variant-numeric:tabular-nums;font-weight:700;width:46px;flex:none;color:var(--accent);display:flex;flex-direction:column;line-height:1.15}
+.time small{font-size:12px;font-weight:500;color:var(--muted)}
 .num{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
 .pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
 .pill.ok{background:var(--sage-soft);color:var(--sage)}
@@ -135,6 +136,23 @@ body.wide .wrap{max-width:1100px}
 .wnow{position:absolute;left:0;right:0;height:2px;background:var(--warn);pointer-events:none}
 .wnow::before{content:"";position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:99px;background:var(--warn)}
 @media (min-width:700px){.week{grid-template-columns:40px repeat(var(--cols),minmax(0,1fr))}.whead .wnum{font-size:30px}.wapt{font-size:13px;padding:3px 6px}.wapt span{font-size:12px}}
+.wlink{border:0;background:none;padding:0;text-align:left;color:var(--ink);font:inherit;cursor:pointer;margin-right:auto}
+.wlink b{color:var(--gold)}
+.month{display:grid;grid-template-columns:28px repeat(7,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.month .mh{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:center;padding:6px 0;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.month .mh.we{color:var(--gold)}
+.mkw{border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--paper);color:var(--muted);font-size:11px;padding:6px 0;border-radius:0;justify-content:center;align-items:flex-start;font-variant-numeric:tabular-nums}
+.mday{display:flex;flex-direction:column;align-items:stretch;gap:2px;min-width:0;min-height:72px;border:0;border-radius:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface);padding:4px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;position:relative}
+.mday.we{background:var(--paper)}
+.mday.out{color:var(--muted);background:var(--paper);opacity:.6}
+.mday .mnum{font-size:14px;font-variant-numeric:tabular-nums}
+.mday.today .mnum{background:var(--gold);color:#fff;border-radius:99px;width:24px;height:24px;display:grid;place-items:center;font-weight:700}
+.mlist{display:none;flex-direction:column;gap:2px;min-width:0}
+.mapt{font-size:11.5px;line-height:1.2;background:var(--accent-soft);border-left:2px solid var(--accent);border-radius:3px;padding:1px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mapt.paid{background:var(--sage-soft);border-left-color:var(--sage)}
+.mmore{font-size:11px;color:var(--muted)}
+.mcount{align-self:flex-start;background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold-2);font-size:12px;font-weight:700;border-radius:99px;min-width:22px;height:22px;display:grid;place-items:center;margin-top:auto}
+@media (min-width:600px){.mlist{display:flex}.mcount{display:none}.mday{min-height:96px}.month{grid-template-columns:40px repeat(7,minmax(0,1fr))}}
 .chips{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 6px;margin-top:4px}
 .chip{border-radius:99px;padding:7px 13px;font-size:14px;font-weight:600;color:var(--muted);flex:none}
 .chip[aria-pressed="true"]{background:var(--gold-soft);border-color:var(--gold-2);color:var(--gold)}
@@ -314,15 +332,20 @@ async function importContacts(src){
 }
 // Behandlungen eines Termins: neue Termine haben items[], alte nur den Text "treatment"
 const apptItems=a=>a.items&&a.items.length?a.items:(a.treatment?[{name:a.treatment,price:+a.price||0,duration:+(S.treatments.find(t=>t.name===a.treatment)?.duration)||0}]:[]);
-const apptMinutes=a=>apptItems(a).reduce((s,x)=>s+(+x.duration||0),0);
+const toMin=t=>{const [h,m]=String(t||"").split(":").map(Number);return isNaN(h)?null:h*60+(m||0)};
+const toTime=m=>String(Math.floor(m/60)%24).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+// Dauer: eigene Endzeit hat Vorrang, sonst Summe der Behandlungen
+const apptMinutes=a=>{const s=toMin(a.time),e=toMin(a.end);if(s!=null&&e!=null&&e>s)return e-s;return apptItems(a).reduce((s,x)=>s+(+x.duration||0),0)};
 function editAppt(a={}){
   const cl=S.clients.slice().sort((x,y)=>x.name.localeCompare(y.name));
   let sel=apptItems(a).map(x=>({...x}));
   const el=form(a.id?"Termin bearbeiten":"Neuer Termin",[
-    {k:"date",label:"Datum",type:"date",def:day,half:1},{k:"time",label:"Uhrzeit",type:"time",def:"10:00",half:1},
+    {k:"date",label:"Datum",type:"date",def:day},{k:"time",label:"Von",type:"time",def:"10:00",half:1},{k:"end",label:"Bis",type:"time",half:1},
     {k:"clientId",label:"Kundin",type:"select",opts:[["","– Kundin wählen –"],...cl.map(c=>[c.id,c.name])]},
     {k:"price",label:"Preis gesamt (€)",type:"number",half:1},{k:"note",label:"Notiz",half:1}
   ],a,o=>{o.clientName=byId("clients",o.clientId)?.name||"";if(!o.clientId){toast("Bitte eine Kundin wählen");return}
+    if(o.end&&toMin(o.end)<=toMin(o.time)){toast("„Bis“ muss nach „Von“ liegen");return}
+    o.endManual=endTouched;
     o.items=sel;o.treatment=sel.map(x=>x.name).join(" + ");
     save("appts",o);
     const linked=S.entries.filter(e=>o.id&&e.apptId===o.id);
@@ -331,10 +354,22 @@ function editAppt(a={}){
     toast("Termin gespeichert")},
    a.id&&(()=>{del("appts",a.id);S.entries.filter(e=>e.apptId===a.id).forEach(e=>del("entries",e.id));toast("Termin gelöscht")}),
    a.paid?'<p class="note">Bereits kassiert – ein geänderter Preis wird in der Kasse mit angepasst.</p>':'',"Termin löschen (Absage / zu früh)");
-  const price=el.querySelector("#f_price");
+  const price=el.querySelector("#f_price"),tStart=el.querySelector("#f_time"),tEnd=el.querySelector("#f_end");
+  // Endzeit: aus den Behandlungen vorgeschlagen, bleibt aber frei änderbar
+  let endTouched=!!a.endManual;
+  const selMins=()=>sel.reduce((s,x)=>s+(+x.duration||0),0);
+  const durNote=document.createElement("p");durNote.className="note";durNote.style.margin="-4px 2px 0";
+  tEnd.closest(".grid2").after(durNote);
+  const showDur=()=>{const d=toMin(tEnd.value)-toMin(tStart.value),m=selMins();
+    durNote.textContent=tEnd.value&&d>0?"Dauer "+d+" Min."+(m&&d!==m?" (laut Preisliste "+m+" Min.)":""):tEnd.value?"„Bis“ muss nach „Von“ liegen":""};
+  const autoEnd=()=>{if(endTouched)return;const st=toMin(tStart.value),m=selMins();tEnd.value=st!=null&&m?toTime(st+m):"";showDur()};
+  let lastStart=toMin(tStart.value);
+  tStart.addEventListener("change",()=>{const st=toMin(tStart.value);
+    if(endTouched&&tEnd.value&&lastStart!=null&&st!=null)tEnd.value=toTime(toMin(tEnd.value)+st-lastStart);lastStart=st;autoEnd();showDur()});
+  tEnd.addEventListener("change",()=>{endTouched=!!tEnd.value;if(!tEnd.value)autoEnd();showDur()});
   el.querySelector("#f_clientId").insertAdjacentHTML("afterend",'<button type="button" class="ghost" id="newcl" style="align-self:flex-start;padding:4px 0">+ Neue Kundin anlegen</button>');
   // Behandlungs-Auswahl nach der Kundin
-  el.querySelector("#newcl").insertAdjacentHTML("afterend",'<div class="f"><span>Behandlungen</span><div id="trsel" class="trsel"></div><button type="button" class="sm" id="tradd">+ Behandlung hinzufügen</button><div id="trpick" class="trpick" hidden><input type="search" id="trq" placeholder="Behandlung suchen …" aria-label="Behandlung suchen"><div id="trlist" class="list"></div><button type="button" class="sm primary" id="trdone">Fertig</button></div></div>');
+  el.querySelector("#newcl").insertAdjacentHTML("afterend",'<div class="f"><span>Behandlungen</span><div id="trsel" class="trsel"></div><button type="button" class="sm" id="tradd">+ Behandlung hinzufügen</button><div id="trpick" class="trpick" hidden><input type="search" id="trq" placeholder="Behandlung suchen …" aria-label="Behandlung suchen"><div id="trlist" class="list"></div><div class="actions"><button type="button" class="sm" id="trnew">+ Neue Behandlung anlegen</button><button type="button" class="sm primary" id="trdone">Fertig</button></div></div></div>');
   const box=el.querySelector("#trsel"),pick=el.querySelector("#trpick"),list=el.querySelector("#trlist"),q=el.querySelector("#trq");
   const sum=()=>Math.round(sel.reduce((s,x)=>s+(+x.price||0),0)*100)/100;
   const drawSel=()=>{
@@ -347,20 +382,25 @@ function editAppt(a={}){
       list.querySelector("#trstd").onclick=async()=>{await stdPrices();drawList()};return}
     list.innerHTML=tr.filter(t=>!f||t.name.toLowerCase().includes(f)).map(t=>'<label class="row" style="cursor:pointer"><input type="checkbox" data-n="'+esc(t.name)+'"'+(sel.some(x=>x.name===t.name)?' checked':'')+' style="width:22px;height:22px;flex:none"><div class="main"><div class="t">'+esc(t.name)+'</div><div class="s">'+(+t.duration||0)+' Min.</div></div><span class="num">'+eur(t.price)+'</span></label>').join("")||'<div class="empty">Nichts gefunden.</div>';
   };
-  const changed=()=>{drawSel();price.value=sum()||""};
+  const changed=()=>{drawSel();price.value=sum()||"";autoEnd();showDur()};
   el.querySelector("#tradd").onclick=()=>{pick.hidden=!pick.hidden;if(!pick.hidden){drawList();pick.scrollIntoView({block:"nearest"})}};
   el.querySelector("#trdone").onclick=()=>{pick.hidden=true};
   q.oninput=drawList;
   list.addEventListener("change",e=>{const n=e.target.dataset.n;if(!n)return;const t=S.treatments.find(x=>x.name===n);
     if(e.target.checked){if(!sel.some(x=>x.name===n))sel.push({name:n,price:+t.price||0,duration:+t.duration||0})}else sel=sel.filter(x=>x.name!==n);changed()});
   box.addEventListener("click",e=>{const i=e.target.dataset.rm;if(i==null)return;sel.splice(+i,1);changed();if(!pick.hidden)drawList()});
-  drawSel();if(!S.treatments.length){pick.hidden=false;drawList()}
-  el.querySelector("#newcl").onclick=()=>{const f=el.querySelector("#frm"),v={...a};["date","time","price","note"].forEach(k=>v[k]=f.elements[k].value);v.items=sel;v.treatment=sel.map(x=>x.name).join(" + ");
+  drawSel();autoEnd();showDur();if(!S.treatments.length){pick.hidden=false;drawList()}
+  el.querySelector("#trnew").onclick=()=>{const f=el.querySelector("#frm"),v={...a};["date","time","end","clientId","note"].forEach(k=>v[k]=f.elements[k].value);if(!endTouched)v.end="";v.endManual=endTouched;
+    editTreatment({},t=>{v.items=[...sel,{name:t.name,price:+t.price||0,duration:+t.duration||0}];v.price=Math.round(v.items.reduce((s,x)=>s+x.price,0)*100)/100;v.treatment=v.items.map(x=>x.name).join(" + ");editAppt(v)})};
+  el.querySelector("#newcl").onclick=()=>{const f=el.querySelector("#frm"),v={...a};["date","time","end","price","note"].forEach(k=>v[k]=f.elements[k].value);if(!endTouched)v.end="";v.endManual=endTouched;v.items=sel;v.treatment=sel.map(x=>x.name).join(" + ");
     editClient({},o=>editAppt({...v,clientId:o.id}))};
 }
-function editTreatment(t={}){form(t.id?"Behandlung bearbeiten":"Neue Behandlung",[
-  {k:"name",label:"Name",req:1},{k:"duration",label:"Dauer (Min.)",type:"number",def:60,half:1},{k:"price",label:"Preis (€)",type:"number",half:1}
- ],t,o=>save("treatments",o),t.id&&(()=>del("treatments",t.id)))}
+function editTreatment(t={},after){form(t.id?"Behandlung bearbeiten":"Neue Behandlung",[
+  {k:"name",label:"Name (z. B. Gesichtsmassage)",req:1},{k:"duration",label:"Dauer (Min.)",type:"number",def:30,half:1},{k:"price",label:"Preis (€)",type:"number",half:1}
+ ],t,o=>{o.name=(o.name||"").trim();if(!o.name)return toast("Bitte einen Namen eintragen");
+   if(S.treatments.some(x=>x.id!==o.id&&x.name.toLowerCase()===o.name.toLowerCase()))return toast("Diese Behandlung gibt es schon");
+   save("treatments",o);toast("Behandlung gespeichert");if(after)setTimeout(()=>after(o),50)},t.id&&(()=>del("treatments",t.id)),
+ t.id?'<p class="note">Änderungen gelten für neue Termine. Bestehende Termine behalten ihren Preis.</p>':'')}
 function editProduct(p={}){form(p.id?"Produkt bearbeiten":"Neues Produkt",[
   {k:"name",label:"Produkt",req:1},{k:"brand",label:"Marke / Lieferant"},
   {k:"stock",label:"Bestand",type:"number",def:0,half:1},{k:"min",label:"Nachbestellen ab",type:"number",def:2,half:1},
@@ -465,7 +505,7 @@ async function copy(t,btn){
   catch{sheet("Text zum Kopieren",'<textarea id="ct" readonly>'+esc(t)+'</textarea><p class="note">Text lange antippen und kopieren.</p>',el=>{const x=el.querySelector("#ct");x.focus();x.select()})}
 }
 // Preise von miraswellness.de (Stand Nov. 2026); Dauer ohne Angabe auf der Webseite ist geschätzt
-const STD=[["Gesicht · BASIC",50,62],["Gesicht · CLASSIC",80,82],["Gesicht · Augenbrauen zupfen",10,8],["Gesicht · Brauen färben",10,10],["Gesicht · Wimpern färben",15,10],["Gesicht · Wimpern & Brauen färben",20,17],
+const STD=[["Gesicht · BASIC",50,62],["Gesicht · CLASSIC",80,82],["Gesicht · Augenbrauen zupfen",10,8],["Gesicht · Brauen färben",10,10],["Gesicht · Wimpern färben",15,10],["Gesicht · Wimpern & Brauen färben",20,17],["Gesicht · Gesichtsmassage",25,32],
  ["Wimpern · Wimpernlifting",45,40],["Wimpern · Wimpernlifting mit Färben",55,48],
  ["Pediküre · Basic",45,30],["Pediküre · Basic mit Lack",50,32],["Pediküre · mit Shellac",60,45],["Pediküre · Wellness-Fußpflege inkl. Fußmassage",60,38],
  ["Maniküre · Basic",30,25],["Maniküre · Basic mit Lack",40,28],["Maniküre · mit Shellac",50,40],["Maniküre · Wellness inkl. Hand-Massage/Peeling",45,32],
@@ -534,7 +574,7 @@ async function saveReportToOneDrive(btn){
 }
 
 // ---------- views ----------
-const rowAppt=(a,btns="")=>'<div class="row tap" data-act="appt" data-id="'+a.id+'"><span class="time">'+esc(a.time)+'</span><div class="main"><div class="t">'+esc(a.clientName||"?")+'</div><div class="s">'+esc(a.treatment||"")+(a.note?" · "+esc(a.note):"")+'</div></div>'+btns+'</div>';
+const rowAppt=(a,btns="")=>'<div class="row tap" data-act="appt" data-id="'+a.id+'"><span class="time">'+esc(a.time)+(a.end?'<small>'+esc(a.end)+'</small>':'')+'</span><div class="main"><div class="t">'+esc(a.clientName||"?")+'</div><div class="s">'+esc(a.treatment||"")+(a.note?" · "+esc(a.note):"")+'</div></div>'+btns+'</div>';
 function apptsOn(d){return S.appts.filter(a=>a.date===d).sort((a,b)=>a.time.localeCompare(b.time))}
 function monthIn(m){return S.entries.filter(e=>e.kind==="in"&&(e.date||"").startsWith(m)).reduce((s,e)=>s+(+e.amount||0),0)}
 const low=()=>S.products.filter(p=>(+p.stock||0)<=(+p.min||0));
@@ -559,25 +599,47 @@ function vHeute(){
   h+='<h2>Social Media</h2><div class="list">'+(nextPost?'<div class="row tap" data-act="post" data-id="'+nextPost.id+'"><div class="main"><div class="t">'+esc(nextPost.platform)+' · '+fdate(nextPost.date)+'</div><div class="s">'+esc(nextPost.idea.slice(0,110))+'</div></div></div>':'<div class="empty">Noch kein Beitrag geplant. Unter <b>Social</b> findest du Ideen.</div>')+'</div>';
   return h;
 }
-let tview="liste", wk=0, half=((new Date().getDay()+6)%7)>3?1:0;
+let mo=0, tview="liste", wk=0, half=((new Date().getDay()+6)%7)>3?1:0;
 // Handy: Woche wie im Terminbuch auf zwei "Seiten" (Mo–Do, Fr–So); Tablet/PC: ganze Woche
 const narrowWeek=()=>matchMedia("(max-width:599px)").matches;
 matchMedia("(max-width:599px)").addEventListener?.("change",()=>{if(tab==="termine"&&tview==="woche")render()});
 try{tview=localStorage.getItem("tview")||"liste"}catch{}
 function setTview(v){tview=v;try{localStorage.setItem("tview",v)}catch{}render()}
 function vTermine(){
-  const sw='<div class="seg" role="group" aria-label="Ansicht"><button data-act="tv" data-v="liste" aria-pressed="'+(tview==="liste")+'">Liste</button><button data-act="tv" data-v="woche" aria-pressed="'+(tview==="woche")+'">Woche</button></div>';
-  return sw+(tview==="woche"?vWoche():vListe());
+  const sw='<div class="seg" role="group" aria-label="Ansicht">'+[["liste","Liste"],["woche","Woche"],["monat","Monat"]].map(([v,l])=>'<button data-act="tv" data-v="'+v+'" aria-pressed="'+(tview===v)+'">'+l+'</button>').join("")+'</div>';
+  return sw+(tview==="woche"?vWoche():tview==="monat"?vMonat():vListe());
 }
-const H0=7,H1=22; // Kalender von 7 bis 22 Uhr, wie im Terminbuch
+const H0=8,H1=20; // Kalender von 8 bis 20 Uhr
 function isoWeek(d){const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const n=(t.getUTCDay()+6)%7;t.setUTCDate(t.getUTCDate()-n+3);const f=new Date(Date.UTC(t.getUTCFullYear(),0,4));return 1+Math.round(((t-f)/864e5-3+((f.getUTCDay()+6)%7))/7)}
+// Zu einem Tag in die Wochenansicht springen
+function gotoWeek(d){
+  const now=new Date(),m0=new Date(now.getFullYear(),now.getMonth(),now.getDate()-((now.getDay()+6)%7)),t=new Date(d+"T00:00"),m1=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7));
+  wk=Math.round((m1-m0)/(7*864e5));half=((t.getDay()+6)%7)>3?1:0;setTview("woche");window.scrollTo(0,0);
+}
+function vMonat(){
+  const now=new Date(),first=new Date(now.getFullYear(),now.getMonth()+mo,1),y=first.getFullYear(),m=first.getMonth();
+  const start=new Date(y,m,1-((first.getDay()+6)%7)),last=new Date(y,m+1,0);
+  const weeks=Math.ceil((((first.getDay()+6)%7)+last.getDate())/7);
+  const inMonth=S.appts.filter(a=>(a.date||"").startsWith(iso(first).slice(0,7))),sum=inMonth.reduce((s,a)=>s+(+a.price||0),0);
+  let h='<div class="wnav"><button class="sm" data-act="mo" data-d="-1" aria-label="Voriger Monat">‹</button><div class="wtitle"><b>'+first.toLocaleDateString("de-DE",{month:"long",year:"numeric"})+'</b><span>'+inMonth.length+' Termin'+(inMonth.length===1?'':'e')+(sum?' · '+eur(sum):'')+'</span></div><button class="sm" data-act="mo" data-d="1" aria-label="Nächster Monat">›</button>'+(mo?'<button class="sm" data-act="mo" data-d="0">Heute</button>':'')+'</div>';
+  h+='<p class="note" style="margin:0 2px 8px">Tippe auf einen Tag oder eine KW, um die Woche zu öffnen.</p>';
+  h+='<div class="month"><div class="mkw mh">KW</div>'+["Mo","Di","Mi","Do","Fr","Sa","So"].map((d,i)=>'<div class="mh'+(i>4?' we':'')+'">'+d+'</div>').join("");
+  for(let w=0;w<weeks;w++){
+    const wd=new Date(start.getFullYear(),start.getMonth(),start.getDate()+w*7);
+    h+='<button class="mkw" data-act="mday" data-d="'+iso(wd)+'" aria-label="KW '+isoWeek(wd)+' öffnen">'+isoWeek(wd)+'</button>';
+    for(let i=0;i<7;i++){const dt=new Date(wd.getFullYear(),wd.getMonth(),wd.getDate()+i),d=iso(dt),l=apptsOn(d),out=dt.getMonth()!==m;
+      h+='<button class="mday'+(out?' out':'')+(i>4?' we':'')+(d===today()?' today':'')+'" data-act="mday" data-d="'+d+'" aria-label="'+fdate(d,{weekday:"long",day:"numeric",month:"long"})+(l.length?", "+l.length+" Termine":"")+'"><span class="mnum">'+dt.getDate()+'</span>'+
+        (l.length?'<span class="mlist">'+l.slice(0,3).map(a=>'<span class="mapt'+(a.paid?' paid':'')+'"><b>'+esc(a.time)+'</b> '+esc((a.clientName||"").split(" ")[0])+'</span>').join("")+(l.length>3?'<span class="mmore">+'+(l.length-3)+'</span>':'')+'</span><span class="mcount">'+l.length+'</span>':'')+'</button>'}
+  }
+  return h+'</div>';
+}
 function vWoche(){
   const now=new Date(),dow=(now.getDay()+6)%7,mon=new Date(now.getFullYear(),now.getMonth(),now.getDate()-dow+wk*7);
   const all=[...Array(7)].map((_,i)=>iso(new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i)));
   const nw=narrowWeek(),idx=nw?(half?[4,5,6]:[0,1,2,3]):[0,1,2,3,4,5,6],days=idx.map(i=>all[i]);
   const kw=isoWeek(mon),range=(nw?(half?"Fr – So · ":"Mo – Do · "):"")+fdate(days[0],{day:"numeric",month:"short"})+" – "+fdate(days[days.length-1],{day:"numeric",month:"short",year:"numeric"});
   const wkAppts=days.flatMap(apptsOn),sum=wkAppts.reduce((s,a)=>s+(+a.price||0),0);
-  let h='<div class="wnav"><button class="sm" data-act="wk" data-d="-1" aria-label="Vorige Woche">‹</button><div class="wtitle"><b>KW '+kw+'</b><span>'+range+'</span></div><button class="sm" data-act="wk" data-d="1" aria-label="Nächste Woche">›</button>'+(wk||(nw&&half!==(((now.getDay()+6)%7)>3?1:0))?'<button class="sm" data-act="wk" data-d="0">Heute</button>':'')+'</div>';
+  let h='<div class="wnav"><button class="sm" data-act="wk" data-d="-1" aria-label="Vorige Woche">‹</button><button class="wtitle wlink" data-act="w2m" data-d="'+days[0]+'" aria-label="Monatsansicht öffnen"><b>KW '+kw+' ▾</b><span>'+range+'</span></button><button class="sm" data-act="wk" data-d="1" aria-label="Nächste Woche">›</button>'+(wk||(nw&&half!==(((now.getDay()+6)%7)>3?1:0))?'<button class="sm" data-act="wk" data-d="0">Heute</button>':'')+'</div>';
   h+='<p class="note" style="margin:0 2px 8px">'+wkAppts.length+' Termin'+(wkAppts.length===1?'':'e')+(sum?' · '+eur(sum):'')+' · Tippe auf eine freie Zeit, um einen Termin anzulegen.</p>';
   const PX=52,hours=[...Array(H1-H0)].map((_,i)=>H0+i);
   h+='<div class="week" style="--hpx:'+PX+'px;--rows:'+(H1-H0)+';--cols:'+days.length+'"><div class="wcorner"></div>';
@@ -596,7 +658,7 @@ function vWoche(){
       '</div>'});
   h+='</div>';
   const out=S.appts.filter(a=>all.includes(a.date)&&((a.time||"")<String(H0).padStart(2,"0")+":00"||(a.time||"")>=H1+":00"));
-  if(out.length)h+='<p class="note">Außerhalb 7–22 Uhr: '+out.map(a=>esc(fdate(a.date,{weekday:"short"})+" "+a.time+" "+(a.clientName||""))).join(", ")+'</p>';
+  if(out.length)h+='<p class="note">Außerhalb 8–20 Uhr: '+out.map(a=>esc(fdate(a.date,{weekday:"short"})+" "+a.time+" "+(a.clientName||""))).join(", ")+'</p>';
   return h;
 }
 function vListe(){
@@ -666,7 +728,7 @@ function render(){
   const v=document.getElementById("view"), f=document.getElementById("fab");
   if(!ready){v.innerHTML='<div class="empty">Studio wird geladen …</div>';f.hidden=true;return}
   const hadFocus=document.activeElement?.id==="search", pos=document.activeElement?.selectionStart;
-  document.body.classList.toggle("wide",tab==="termine"&&tview==="woche");
+  document.body.classList.toggle("wide",tab==="termine"&&tview!=="liste");
   v.innerHTML=fn();
   f.textContent=fab;f.hidden=false;
   if(hadFocus){const s=document.getElementById("search");s.focus();s.setSelectionRange(pos,pos)}
@@ -692,7 +754,9 @@ document.addEventListener("click",e=>{
     done:()=>{const p=byId("posts",id);save("posts",{...p,done:true});toast("Super, veröffentlicht!")},
     copypost:()=>copy(byId("posts",id).idea),
     impick:()=>importContacts("picker"), imvcf:()=>importContacts("vcf"),
-    tv:()=>setTview(a.dataset.v), wk:()=>{const d=+a.dataset.d;
+    tv:()=>setTview(a.dataset.v), mday:()=>gotoWeek(a.dataset.d),
+    mo:()=>{mo=a.dataset.d==="0"?0:mo+(+a.dataset.d);render()},
+    w2m:()=>{const t=new Date(a.dataset.d+"T00:00"),n=new Date();mo=(t.getFullYear()-n.getFullYear())*12+t.getMonth()-n.getMonth();setTview("monat")}, wk:()=>{const d=+a.dataset.d;
       if(a.dataset.d==="0"){wk=0;half=((new Date().getDay()+6)%7)>3?1:0}
       else if(narrowWeek()){const pos=wk*2+half+d;wk=Math.floor(pos/2);half=pos-wk*2}
       else wk+=d;
