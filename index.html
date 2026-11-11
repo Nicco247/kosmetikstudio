@@ -153,6 +153,11 @@ body.wide .wrap{max-width:1100px}
 .mmore{font-size:11px;color:var(--muted)}
 .mcount{align-self:flex-start;background:var(--gold-soft);color:var(--gold);border:1px solid var(--gold-2);font-size:12px;font-weight:700;border-radius:99px;min-width:22px;height:22px;display:grid;place-items:center;margin-top:auto}
 @media (min-width:600px){.mlist{display:flex}.mcount{display:none}.mday{min-height:96px}.month{grid-template-columns:40px repeat(7,minmax(0,1fr))}}
+.vinfo{background:var(--gold-soft);border:1px solid var(--gold-2);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.vinfo div{display:flex;justify-content:space-between;gap:10px}
+.vinfo b{font-variant-numeric:tabular-nums}
+.vinfo .vleft{border-top:1px solid var(--gold-2);padding-top:6px;margin-top:2px;color:var(--gold);font-weight:700}
+.qa{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 6px;margin-top:4px}
 .chip{border-radius:99px;padding:7px 13px;font-size:14px;font-weight:600;color:var(--muted);flex:none}
 .chip[aria-pressed="true"]{background:var(--gold-soft);border-color:var(--gold-2);color:var(--gold)}
@@ -267,7 +272,8 @@ function form(title,fields,obj,onSave,onDelete,extra="",delLabel="Löschen"){
     const fm=el.querySelector("#frm");
     fm.addEventListener("submit",e=>{e.preventDefault();const o={...obj};
       fields.forEach(f=>{let v=fm.elements[f.k].value;if(f.type==="number")v=v===""?0:Number(v.replace(",","."));o[f.k]=v});
-      onSave(o);closeSheet()});
+      const sheetEl=document.getElementById("sheet"),r=onSave(o),done=v=>{if(v!==false&&document.getElementById("sheet")===sheetEl)closeSheet()};
+      if(r&&typeof r.then==="function")r.then(done);else done(r)});
     el.querySelector("#fcancel").onclick=closeSheet;
     if(onDelete){const b=el.querySelector("#fdel");b.onclick=()=>{if(b.dataset.c){onDelete();closeSheet()}else{b.dataset.c=1;b.textContent="Wirklich löschen?"}}}
     fm.dataset.mounted=1;el.dispatchEvent(new CustomEvent("mounted"));
@@ -343,8 +349,8 @@ function editAppt(a={}){
     {k:"date",label:"Datum",type:"date",def:day},{k:"time",label:"Von",type:"time",def:"10:00",half:1},{k:"end",label:"Bis",type:"time",half:1},
     {k:"clientId",label:"Kundin",type:"select",opts:[["","– Kundin wählen –"],...cl.map(c=>[c.id,c.name])]},
     {k:"price",label:"Preis gesamt (€)",type:"number",half:1},{k:"note",label:"Notiz",half:1}
-  ],a,o=>{o.clientName=byId("clients",o.clientId)?.name||"";if(!o.clientId){toast("Bitte eine Kundin wählen");return}
-    if(o.end&&toMin(o.end)<=toMin(o.time)){toast("„Bis“ muss nach „Von“ liegen");return}
+  ],a,o=>{o.clientName=byId("clients",o.clientId)?.name||"";if(!o.clientId){toast("Bitte eine Kundin wählen");return false}
+    if(o.end&&toMin(o.end)<=toMin(o.time)){toast("„Bis“ muss nach „Von“ liegen");return false}
     o.endManual=endTouched;
     o.items=sel;o.treatment=sel.map(x=>x.name).join(" + ");
     save("appts",o);
@@ -397,8 +403,8 @@ function editAppt(a={}){
 }
 function editTreatment(t={},after){form(t.id?"Behandlung bearbeiten":"Neue Behandlung",[
   {k:"name",label:"Name (z. B. Gesichtsmassage)",req:1},{k:"duration",label:"Dauer (Min.)",type:"number",def:30,half:1},{k:"price",label:"Preis (€)",type:"number",half:1}
- ],t,o=>{o.name=(o.name||"").trim();if(!o.name)return toast("Bitte einen Namen eintragen");
-   if(S.treatments.some(x=>x.id!==o.id&&x.name.toLowerCase()===o.name.toLowerCase()))return toast("Diese Behandlung gibt es schon");
+ ],t,o=>{o.name=(o.name||"").trim();if(!o.name){toast("Bitte einen Namen eintragen");return false}
+   if(S.treatments.some(x=>x.id!==o.id&&x.name.toLowerCase()===o.name.toLowerCase())){toast("Diese Behandlung gibt es schon");return false}
    save("treatments",o);toast("Behandlung gespeichert");if(after)setTimeout(()=>after(o),50)},t.id&&(()=>del("treatments",t.id)),
  t.id?'<p class="note">Änderungen gelten für neue Termine. Bestehende Termine behalten ihren Preis.</p>':'')}
 function editProduct(p={}){form(p.id?"Produkt bearbeiten":"Neues Produkt",[
@@ -407,11 +413,17 @@ function editProduct(p={}){form(p.id?"Produkt bearbeiten":"Neues Produkt",[
   {k:"price",label:"Verkaufspreis (€)",type:"number",half:1},{k:"cost",label:"Einkaufspreis (€)",type:"number",half:1},
   {k:"kind",label:"Verwendung",type:"select",opts:["Verkauf","Kabine","Verkauf & Kabine"]}
  ],p,o=>save("products",o),p.id&&(()=>del("products",p.id)))}
-function editEntry(e={}){form(e.id?"Buchung bearbeiten":"Neue Buchung",[
-  {k:"kind",label:"Art",type:"select",opts:[["in","Einnahme"],["out","Ausgabe"]],def:"out",half:1},{k:"date",label:"Datum",type:"date",def:today(),half:1},
-  {k:"label",label:"Beschreibung (z. B. Wachs, Miete, Gutschein)",req:1},{k:"amount",label:"Betrag (€)",type:"number"},
-  {k:"pay",label:"Zahlart",type:"select",opts:["bar","Karte","Überweisung","PayPal"]}
- ],e,o=>save("entries",o),e.id&&(()=>del("entries",e.id)))}
+function editEntry(e={}){
+  if(e.voucherId&&byId("vouchers",e.voucherId))return showVoucher(byId("vouchers",e.voucherId));
+  const el=form(e.id?"Buchung bearbeiten":"Neue Buchung",[
+  {k:"kind",label:"Art",type:"select",opts:e.id?[["in","Einnahme"],["out","Ausgabe"]]:[["in","Einnahme"],["out","Ausgabe"],["voucher","Gutschein verkauft"]],def:"out",half:1},{k:"date",label:"Datum",type:"date",def:today(),half:1},
+  {k:"label",label:"Beschreibung (z. B. Wachs, Miete)",req:1},{k:"amount",label:"Betrag (€)",type:"number"},
+  {k:"pay",label:"Zahlart",type:"select",opts:PAYS}
+ ],e,o=>save("entries",o),e.id&&(()=>del("entries",e.id)));
+  // "Gutschein verkauft" führt direkt ins Gutschein-Formular (mit Nummer)
+  el.querySelector("#f_kind").addEventListener("change",x=>{if(x.target.value!=="voucher")return;const f=el.querySelector("#frm");
+    editVoucher({},{date:f.elements.date.value,amount:f.elements.amount.value,pay:f.elements.pay.value})});
+}
 function editPost(p={}){form(p.id?"Beitrag bearbeiten":"Beitrag planen",[
   {k:"date",label:"Datum",type:"date",def:today(1),half:1},{k:"platform",label:"Kanal",type:"select",opts:["Instagram","Instagram Story","Facebook","TikTok","Google-Profil","WhatsApp Status"],half:1},
   {k:"idea",label:"Idee / Text",type:"textarea",req:1}
@@ -429,54 +441,69 @@ function showClient(c){
    el=>{el.querySelector("#ce").onclick=()=>editClient(c);el.querySelector("#cn").onclick=()=>editAppt({clientId:c.id,date:today()})});
 }
 
+const PAYS=["bar","Karte","Überweisung","PayPal"];
 // ---------- actions ----------
 const entryFor=apptId=>apptId&&S.entries.find(e=>e.apptId===apptId);
-const PAYS=["bar","Karte","Überweisung","PayPal"];
 function checkout(a){
   const open=S.vouchers.filter(v=>voucherRest(v)>0.004).sort((x,y)=>String(x.no).localeCompare(String(y.no)));
   const el=form("Kassieren · "+(a.clientName||""),[
     {k:"price",label:"Preis heute (€) – bei Bedarf anpassen",type:"number"},
     {k:"pay",label:"Zahlart",type:"select",opts:[...PAYS,"Gutschein"]},
-    {k:"voucherId",label:"Welcher Gutschein?",type:"select",opts:[["","– Gutschein wählen –"],...open.map(v=>[v.id,v.no+" · "+(v.forName||v.buyer||"")+" · Rest "+eur(voucherRest(v))])]},
-    {k:"restPay",label:"Restbetrag bezahlt mit",type:"select",opts:PAYS}
+    {k:"voucherId",label:"Welcher Gutschein? (Nummer)",type:"select",opts:[["","– Gutschein wählen –"],...open.map(v=>[v.id,v.no+((v.forName||v.buyer)?" · "+(v.forName||v.buyer):"")+" · noch "+eur(voucherRest(v))])]},
+    {k:"use",label:"Davon vom Gutschein (€)",type:"number"},
+    {k:"restPay",label:"Rest bezahlt mit",type:"select",opts:PAYS}
   ],{...a,pay:"bar"},async o=>{
     const price=+o.price||0,label=(a.treatment||"Behandlung")+" – "+(a.clientName||"");
-    if(o.pay==="Gutschein"&&!byId("vouchers",o.voucherId)){toast("Bitte einen Gutschein auswählen");return}
-    const {pay,voucherId,restPay,...appt}=o;
+    if(o.pay==="Gutschein"&&!byId("vouchers",o.voucherId)){toast("Bitte einen Gutschein auswählen");return false}
+    const {pay,voucherId,restPay,use:useIn,...appt}=o;
     await save("appts",{...appt,paid:true});
     for(const e of S.entries.filter(e=>e.apptId===a.id))await del("entries",e.id);
     if(pay==="Gutschein"){
-      const v=byId("vouchers",voucherId),use=Math.min(voucherRest(v),price);
+      const v=byId("vouchers",voucherId),use=Math.max(0,Math.min(voucherRest(v),price,useIn===""||useIn==null?Infinity:+useIn));
       // Einlösung ist kein neues Geld: eigene Buchungsart, zählt nicht zu den Einnahmen
       await save("entries",{kind:"redeem",date:a.date,label:"Gutschein "+v.no+" eingelöst – "+label,amount:Math.round(use*100)/100,pay:"Gutschein",apptId:a.id,voucherId:v.id});
       const rest=Math.round((price-use)*100)/100;
       if(rest>0)await save("entries",{kind:"in",date:a.date,label:label+" (Rest zum Gutschein)",amount:rest,pay:restPay,apptId:a.id});
-      toast(eur(use)+" vom Gutschein"+(rest>0?" + "+eur(rest)+" "+restPay:""),4500);
+      const left=Math.round((voucherRest(v))*100)/100;
+      toast(eur(use)+" vom Gutschein "+v.no+(rest>0?" + "+eur(rest)+" "+restPay:"")+" · noch "+eur(left)+" drauf",5000);
     }else{
       await save("entries",{kind:"in",date:a.date,label,amount:price,pay,apptId:a.id});
       toast(eur(price)+" kassiert");
     }
   },null,'<p class="note">'+esc(a.treatment||"")+' · Listenpreis '+eur(a.price)+'</p>');
-  const pay=el.querySelector("#f_pay"),vs=el.querySelector("#f_voucherId").closest("label"),rp=el.querySelector("#f_restPay").closest("label");
-  const sync=()=>{const g=pay.value==="Gutschein";vs.hidden=!g;rp.hidden=!g;if(g&&!open.length)vs.insertAdjacentHTML("afterend",'<span class="note" id="nov">Kein offener Gutschein. Verkaufte Gutscheine trägst du in der Kasse ein.</span>');else el.querySelector("#nov")?.remove()};
-  pay.onchange=sync;sync();
+  const pay=el.querySelector("#f_pay"),vsel=el.querySelector("#f_voucherId"),vs=vsel.closest("label"),useF=el.querySelector("#f_use"),us=useF.closest("label"),rp=el.querySelector("#f_restPay").closest("label"),priceF=el.querySelector("#f_price");
+  const info=document.createElement("div");info.className="vinfo";rp.after(info);
+  const r2=n=>Math.round(n*100)/100;
+  const calc=(reset)=>{const g=pay.value==="Gutschein",v=byId("vouchers",vsel.value),price=+priceF.value||0;
+    vs.hidden=!g;us.hidden=!g||!v;el.querySelector("#nov")?.remove();
+    if(g&&!open.length)vs.insertAdjacentHTML("afterend",'<span class="note" id="nov">Kein offener Gutschein. Verkaufte Gutscheine trägst du unter Kasse → „+ Gutschein verkaufen“ ein.</span>');
+    if(!g||!v){rp.hidden=true;info.hidden=true;return}
+    const avail=voucherRest(v);if(reset||useF.value==="")useF.value=r2(Math.min(avail,price));
+    const use=r2(Math.max(0,Math.min(+useF.value||0,avail,price))),rest=r2(price-use),left=r2(avail-use);
+    rp.hidden=rest<=0;info.hidden=false;
+    info.innerHTML='<div><span>Gutschein '+esc(v.no)+'</span><b>'+eur(avail)+'</b></div><div><span>Heute abgezogen</span><b>− '+eur(use)+'</b></div>'+(rest>0?'<div><span>Rest zahlt die Kundin</span><b>'+eur(rest)+'</b></div>':'')+'<div class="vleft"><span>Bleibt auf dem Gutschein</span><b>'+eur(left)+'</b></div>';
+  };
+  pay.onchange=()=>calc(true);vsel.onchange=()=>calc(true);priceF.addEventListener("input",()=>calc(true));useF.addEventListener("input",()=>calc(false));calc(true);
 }
 // ---------- Gutscheine ----------
 const voucherRest=v=>Math.round(((+v.amount||0)-S.entries.filter(e=>e.kind==="redeem"&&e.voucherId===v.id).reduce((s,e)=>s+(+e.amount||0),0))*100)/100;
 function nextVoucherNo(){const y=new Date().getFullYear(),n=S.vouchers.filter(v=>String(v.no).startsWith("G"+y+"-")).length+1;return "G"+y+"-"+String(n).padStart(3,"0")}
-function editVoucher(v={}){
+function editVoucher(v={},pre={}){
   const y=new Date().getFullYear();
   form(v.id?"Gutschein bearbeiten":"Gutschein verkaufen",[
-    {k:"no",label:"Gutschein-Nr.",def:nextVoucherNo(),half:1},{k:"date",label:"Verkauft am",type:"date",def:today(),half:1},
-    {k:"buyer",label:"Gekauft von",req:1},{k:"forName",label:"Für (beschenkte Person, optional)"},
-    {k:"amount",label:"Wert (€)",type:"number",req:1,half:1},{k:"pay",label:"Bezahlt mit",type:"select",opts:PAYS,half:1},
+    {k:"no",label:"Gutschein-Nr. (vom Gutschein)",def:nextVoucherNo(),half:1},{k:"date",label:"Verkauft am",type:"date",def:pre.date||today(),half:1},
+    {k:"buyer",label:"Gekauft von (optional)"},{k:"forName",label:"Für (beschenkte Person, optional)"},
+    {k:"amount",label:"Wert (€)",type:"number",req:1,half:1,def:pre.amount||""},{k:"pay",label:"Bezahlt mit",type:"select",opts:PAYS,half:1,def:pre.pay||"bar"},
     {k:"validUntil",label:"Gültig bis",type:"date",def:(y+3)+"-12-31"},{k:"note",label:"Notiz (z. B. für welche Behandlung)"}
   ],v,async o=>{
-    if(!(+o.amount>0)){toast("Bitte einen Wert eintragen");return}
+    if(!(+o.amount>0)){toast("Bitte einen Wert eintragen");return false}
+    o.no=String(o.no||"").trim()||nextVoucherNo();
+    if(S.vouchers.some(x=>x.id!==o.id&&String(x.no).toLowerCase()===o.no.toLowerCase())){toast("Die Gutschein-Nr. "+o.no+" gibt es schon");return false}
+    if(!o.buyer)o.buyer="";
     if(!o.id)o.id=crypto.randomUUID?crypto.randomUUID():b64url(rand(12));
     await save("vouchers",o);
     const sale=S.entries.find(e=>e.kind==="in"&&e.voucherId===o.id);
-    await save("entries",{...(sale||{}),kind:"in",date:o.date,label:"Gutschein "+o.no+" verkauft – "+o.buyer,amount:+o.amount,pay:o.pay,voucherId:o.id});
+    await save("entries",{...(sale||{}),kind:"in",date:o.date,label:"Gutschein "+o.no+" verkauft"+(o.buyer?" – "+o.buyer:""),amount:+o.amount,pay:o.pay,voucherId:o.id});
     toast(v.id?"Gutschein gespeichert":"Gutschein "+o.no+" verkauft – "+eur(o.amount)+" als Einnahme gebucht",4500);
   },v.id&&(()=>{del("vouchers",v.id);S.entries.filter(e=>e.voucherId===v.id&&e.kind==="in").forEach(e=>del("entries",e.id));toast("Gutschein gelöscht")}),
   v.id?'':'<p class="note">Der Betrag wird heute als Einnahme gebucht. Beim späteren Einlösen zählt er nicht noch einmal.</p>',"Gutschein löschen");
@@ -683,7 +710,8 @@ function vKunden(){
 }
 function vKasse(){
   const [from,to]=rangeOf(),R=periodReport(S,from,to),e=R.entries.slice().reverse(),inn=R.income,out=R.expense;
-  let h='<div class="chips" role="group" aria-label="Zeitraum">'+RANGES.map(([k,l])=>'<button class="chip" data-act="rk" data-k="'+k+'" aria-pressed="'+(rk===k)+'">'+l+'</button>').join("")+'</div>';
+  let h='<div class="qa"><button class="sm" data-act="newin">+ Einnahme</button><button class="sm" data-act="newout">+ Ausgabe</button><button class="sm primary" data-act="newvoucher">+ Gutschein verkaufen</button></div>';
+  h+='<div class="chips" role="group" aria-label="Zeitraum">'+RANGES.map(([k,l])=>'<button class="chip" data-act="rk" data-k="'+k+'" aria-pressed="'+(rk===k)+'">'+l+'</button>').join("")+'</div>';
   if(rk==="custom")h+='<div class="grid2" style="margin-top:10px"><label class="f" for="rf">Von<input type="date" id="rf" value="'+rFrom+'"></label><label class="f" for="rt">Bis<input type="date" id="rt" value="'+rTo+'"></label></div>';
   const saved=S.log.find(x=>x.type==="abrechnung"&&x.from===from&&x.to===to);
   h+='<div class="bar"><b class="period">'+dlong(from)+' – '+dlong(to)+'</b><span style="display:flex;gap:6px;flex-wrap:wrap">'+(mode==="cloud"?'<button class="sm primary" data-act="xlsxod">In OneDrive speichern</button>':'')+'<button class="sm'+(mode==="cloud"?'':' primary')+'" data-act="xlsx">Excel herunterladen</button></span></div>';
@@ -753,6 +781,7 @@ document.addEventListener("click",e=>{
     take:()=>{const x=ideas[+a.dataset.i];save("posts",{date:today(1),platform:x.platform,idea:x.title+": "+x.caption,done:false});ideas.splice(+a.dataset.i,1);toast("Für morgen eingeplant");render()},
     done:()=>{const p=byId("posts",id);save("posts",{...p,done:true});toast("Super, veröffentlicht!")},
     copypost:()=>copy(byId("posts",id).idea),
+    newin:()=>editEntry({kind:"in"}), newout:()=>editEntry({kind:"out"}),
     impick:()=>importContacts("picker"), imvcf:()=>importContacts("vcf"),
     tv:()=>setTview(a.dataset.v), mday:()=>gotoWeek(a.dataset.d),
     mo:()=>{mo=a.dataset.d==="0"?0:mo+(+a.dataset.d);render()},
