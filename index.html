@@ -445,17 +445,28 @@ const PAYS=["bar","Karte","Überweisung","PayPal"];
 // ---------- actions ----------
 const entryFor=apptId=>apptId&&S.entries.find(e=>e.apptId===apptId);
 function checkout(a){
-  const open=S.vouchers.filter(v=>voucherRest(v)>0.004).sort((x,y)=>String(x.no).localeCompare(String(y.no)));
+  const open=S.vouchers.filter(v=>voucherRest(v)>0.004).sort(byValueNo);
   const el=form("Kassieren · "+(a.clientName||""),[
     {k:"price",label:"Preis heute (€) – bei Bedarf anpassen",type:"number"},
     {k:"pay",label:"Zahlart",type:"select",opts:[...PAYS,"Gutschein"]},
-    {k:"voucherId",label:"Welcher Gutschein? (Nummer)",type:"select",opts:[["","– Gutschein wählen –"],...open.map(v=>[v.id,v.no+((v.forName||v.buyer)?" · "+(v.forName||v.buyer):"")+" · noch "+eur(voucherRest(v))])]},
+    {k:"voucherId",label:"Welcher Gutschein?",type:"select",opts:[["","– Gutschein wählen –"]]},
+    {k:"oldNo",label:"Gutschein-Nr.",half:1},{k:"oldVal",label:"Wert auf dem Gutschein (€)",type:"number",half:1},
     {k:"use",label:"Davon vom Gutschein (€)",type:"number"},
     {k:"restPay",label:"Rest bezahlt mit",type:"select",opts:PAYS}
   ],{...a,pay:"bar"},async o=>{
     const price=+o.price||0,label=(a.treatment||"Behandlung")+" – "+(a.clientName||"");
+    if(o.pay==="Gutschein"&&o.voucherId==="__alt"){
+      // Alter Papier-Gutschein (vor der App verkauft): jetzt im System anlegen, ohne neue Einnahme
+      const no=String(o.oldNo||"").trim(),val=+o.oldVal||0;
+      if(!no){toast("Bitte die Gutschein-Nr. eintragen");return false}
+      if(!(val>0)){toast("Bitte den Wert auf dem Gutschein eintragen");return false}
+      const ex=findVoucherNo(no);
+      if(ex)o.voucherId=ex.id;
+      else{const id=crypto.randomUUID?crypto.randomUUID():b64url(rand(12));
+        await save("vouchers",{id,no,amount:val,date:"",legacy:true,buyer:"",forName:a.clientName||"",pay:"",validUntil:"",note:"Vor der App verkauft – beim Einlösen erfasst"});o.voucherId=id}
+    }
     if(o.pay==="Gutschein"&&!byId("vouchers",o.voucherId)){toast("Bitte einen Gutschein auswählen");return false}
-    const {pay,voucherId,restPay,use:useIn,...appt}=o;
+    const {pay,voucherId,restPay,use:useIn,oldNo,oldVal,...appt}=o;
     await save("appts",{...appt,paid:true});
     for(const e of S.entries.filter(e=>e.apptId===a.id))await del("entries",e.id);
     if(pay==="Gutschein"){
@@ -471,21 +482,29 @@ function checkout(a){
       toast(eur(price)+" kassiert");
     }
   },null,'<p class="note">'+esc(a.treatment||"")+' · Listenpreis '+eur(a.price)+'</p>');
-  const pay=el.querySelector("#f_pay"),vsel=el.querySelector("#f_voucherId"),vs=vsel.closest("label"),useF=el.querySelector("#f_use"),us=useF.closest("label"),rp=el.querySelector("#f_restPay").closest("label"),priceF=el.querySelector("#f_price");
+  const pay=el.querySelector("#f_pay"),vsel=el.querySelector("#f_voucherId"),vs=vsel.closest("label"),oldNo=el.querySelector("#f_oldNo"),oldVal=el.querySelector("#f_oldVal"),oldBox=oldNo.closest(".grid2"),useF=el.querySelector("#f_use"),us=useF.closest("label"),rp=el.querySelector("#f_restPay").closest("label"),priceF=el.querySelector("#f_price");
   const info=document.createElement("div");info.className="vinfo";rp.after(info);
+  const groups={};open.forEach(v=>{const k=+v.amount||0;(groups[k]=groups[k]||[]).push(v)});
+  vsel.innerHTML='<option value="">– Gutschein wählen –</option><option value="__alt">✎ Alter Gutschein (eintippen)</option>'+
+    Object.keys(groups).sort((x,y)=>x-y).map(k=>'<optgroup label="'+eur(k)+'-Gutscheine">'+groups[k].map(v=>'<option value="'+v.id+'">Nr. '+esc(v.no)+' (noch '+eur(voucherRest(v))+' offen)'+((v.forName||v.buyer)?' · '+esc(v.forName||v.buyer):'')+'</option>').join("")+'</optgroup>').join("");
+  oldNo.addEventListener("change",()=>{const ex=findVoucherNo(oldNo.value);if(ex&&voucherRest(ex)>0.004){vsel.value=ex.id;toast("Gutschein "+ex.no+" ist schon in der App – ausgewählt",3500);calc(true)}
+    else if(ex){toast("Gutschein "+ex.no+" ist schon komplett eingelöst",4000)}});
   const r2=n=>Math.round(n*100)/100;
-  const calc=(reset)=>{const g=pay.value==="Gutschein",v=byId("vouchers",vsel.value),price=+priceF.value||0;
-    vs.hidden=!g;us.hidden=!g||!v;el.querySelector("#nov")?.remove();
-    if(g&&!open.length)vs.insertAdjacentHTML("afterend",'<span class="note" id="nov">Kein offener Gutschein. Verkaufte Gutscheine trägst du unter Kasse → „+ Gutschein verkaufen“ ein.</span>');
-    if(!g||!v){rp.hidden=true;info.hidden=true;return}
-    const avail=voucherRest(v);if(reset||useF.value==="")useF.value=r2(Math.min(avail,price));
+  const calc=(reset)=>{const g=pay.value==="Gutschein",isOld=vsel.value==="__alt",price=+priceF.value||0;
+    const v=isOld?{no:oldNo.value.trim()||"(neu)",amount:+oldVal.value||0}:byId("vouchers",vsel.value);
+    vs.hidden=!g;oldBox.hidden=!g||!isOld;us.hidden=!g||!v||(isOld&&!(+oldVal.value>0));el.querySelector("#nov")?.remove();
+    if(g&&isOld)oldBox.insertAdjacentHTML("afterend",'<span class="note" id="nov">Für Gutscheine von vor der App. Er wird dabei gespeichert – ein Rest steht beim nächsten Mal in der Liste.</span>');
+    if(!g||!v||(isOld&&!(+oldVal.value>0))){rp.hidden=true;info.hidden=true;return}
+    const avail=isOld?r2(+oldVal.value||0):voucherRest(v);if(reset||useF.value==="")useF.value=r2(Math.min(avail,price));
     const use=r2(Math.max(0,Math.min(+useF.value||0,avail,price))),rest=r2(price-use),left=r2(avail-use);
     rp.hidden=rest<=0;info.hidden=false;
     info.innerHTML='<div><span>Gutschein '+esc(v.no)+'</span><b>'+eur(avail)+'</b></div><div><span>Heute abgezogen</span><b>− '+eur(use)+'</b></div>'+(rest>0?'<div><span>Rest zahlt die Kundin</span><b>'+eur(rest)+'</b></div>':'')+'<div class="vleft"><span>Bleibt auf dem Gutschein</span><b>'+eur(left)+'</b></div>';
   };
-  pay.onchange=()=>calc(true);vsel.onchange=()=>calc(true);priceF.addEventListener("input",()=>calc(true));useF.addEventListener("input",()=>calc(false));calc(true);
+  pay.onchange=()=>calc(true);vsel.onchange=()=>{calc(true);if(vsel.value==="__alt")oldNo.focus()};oldVal.addEventListener("input",()=>calc(true));oldNo.addEventListener("input",()=>calc(false));priceF.addEventListener("input",()=>calc(true));useF.addEventListener("input",()=>calc(false));calc(true);
 }
 // ---------- Gutscheine ----------
+const byValueNo=(x,y)=>(+x.amount||0)-(+y.amount||0)||String(x.no).localeCompare(String(y.no),"de",{numeric:true});
+const findVoucherNo=no=>{const n=String(no||"").trim().toLowerCase();return n&&S.vouchers.find(v=>String(v.no).trim().toLowerCase()===n)};
 const voucherRest=v=>Math.round(((+v.amount||0)-S.entries.filter(e=>e.kind==="redeem"&&e.voucherId===v.id).reduce((s,e)=>s+(+e.amount||0),0))*100)/100;
 function nextVoucherNo(){const y=new Date().getFullYear(),n=S.vouchers.filter(v=>String(v.no).startsWith("G"+y+"-")).length+1;return "G"+y+"-"+String(n).padStart(3,"0")}
 function editVoucher(v={},pre={}){
@@ -512,7 +531,7 @@ function showVoucher(v){
   const uses=S.entries.filter(e=>e.kind==="redeem"&&e.voucherId===v.id).sort((a,b)=>a.date.localeCompare(b.date)),rest=voucherRest(v);
   const expired=v.validUntil&&v.validUntil<today()&&rest>0;
   sheet("Gutschein "+v.no,
-    '<div class="card"><p>Wert <b>'+eur(v.amount)+'</b> · Rest <b style="color:'+(rest>0?'var(--gold)':'var(--muted)')+'">'+eur(rest)+'</b></p><p class="note">Verkauft am '+fdate(v.date,{day:"numeric",month:"long",year:"numeric"})+' an '+esc(v.buyer||"")+(v.forName?' · für '+esc(v.forName):'')+' · '+esc(v.pay||"")+(v.validUntil?'<br>Gültig bis '+fdate(v.validUntil,{day:"numeric",month:"long",year:"numeric"}):'')+(v.note?'<br>'+esc(v.note):'')+'</p>'+(expired?'<p class="gerr">Abgelaufen</p>':'')+'</div>'+
+    '<div class="card"><p>Wert <b>'+eur(v.amount)+'</b> · Rest <b style="color:'+(rest>0?'var(--gold)':'var(--muted)')+'">'+eur(rest)+'</b></p><p class="note">'+(v.legacy||!v.date?'Vor der App verkauft (beim ersten Einlösen erfasst)'+(v.forName?' · eingelöst von '+esc(v.forName):''):'Verkauft am '+fdate(v.date,{day:"numeric",month:"long",year:"numeric"})+(v.buyer?' an '+esc(v.buyer):'')+(v.forName?' · für '+esc(v.forName):'')+' · '+esc(v.pay||""))+(v.validUntil?'<br>Gültig bis '+fdate(v.validUntil,{day:"numeric",month:"long",year:"numeric"}):'')+(v.note?'<br>'+esc(v.note):'')+'</p>'+(expired?'<p class="gerr">Abgelaufen</p>':'')+'</div>'+
     '<h2>Eingelöst ('+uses.length+')</h2>'+(uses.length?'<div class="list">'+uses.map(e=>'<div class="row"><div class="main"><div class="t">'+esc(e.label.replace(/^Gutschein \S+ eingelöst – /,""))+'</div><div class="s">'+fdate(e.date,{day:"numeric",month:"short",year:"numeric"})+'</div></div><span class="num">'+eur(e.amount)+'</span></div>').join("")+'</div>':'<div class="empty">Noch nicht eingelöst. Beim Kassieren „Gutschein“ als Zahlart wählen.</div>')+
     '<div class="actions" style="margin-top:14px"><span></span><button id="vedit">Bearbeiten</button></div>',
     el=>el.querySelector("#vedit").onclick=()=>editVoucher(v));
@@ -721,9 +740,9 @@ function vKasse(){
   h+='<p class="note" style="margin:8px 2px 0">'+R.appts.length+' Termin'+(R.appts.length===1?'':'e')+(R.appts.length?' · '+R.paid+' bezahlt':'')+(pays?' · '+pays:'')+'</p>';
   h+='<h2>Buchungen ('+e.length+')</h2><div class="list">'+(e.length?e.map(x=>'<div class="row tap" data-act="'+(x.voucherId?'voucher" data-id="'+x.voucherId:'entry" data-id="'+x.id)+'"><div class="main"><div class="t">'+esc(x.label)+'</div><div class="s">'+fdate(x.date,{day:"numeric",month:"short"})+' · '+esc(x.pay||"")+'</div></div>'+(x.kind==="redeem"?'<span class="num" style="color:var(--muted)">'+eur(x.amount)+'</span><span class="pill acc">Gutschein</span>':'<span class="num" style="color:'+(x.kind==="in"?"var(--sage)":"var(--warn)")+'">'+(x.kind==="in"?"+":"−")+eur(x.amount)+'</span>')+'</div>').join(""):'<div class="empty">Keine Buchungen in diesem Zeitraum. Kassierte Termine und Produktverkäufe landen automatisch hier, Ausgaben trägst du mit <b>+ Buchung</b> ein.</div>')+'</div>';
   h+='<h2>Termine ('+R.appts.length+')</h2><div class="list">'+(R.appts.length?R.appts.slice().reverse().map(a=>'<div class="row tap" data-act="appt" data-id="'+a.id+'"><div class="main"><div class="t">'+esc(a.clientName||"?")+'</div><div class="s">'+fdate(a.date,{day:"numeric",month:"short"})+' · '+esc(a.time)+' · '+esc(a.treatment||"")+'</div></div><span class="num">'+eur(a.price)+'</span>'+(a.paid?'<span class="pill ok">bezahlt</span>':'<span class="pill warn">offen</span>')+'</div>').join(""):'<div class="empty">Keine Termine in diesem Zeitraum.</div>')+'</div>';
-  const vs=S.vouchers.map(v=>({...v,rest:voucherRest(v)})),openV=vs.filter(v=>v.rest>0.004).sort((a,b)=>b.date.localeCompare(a.date)),openSum=openV.reduce((s,v)=>s+v.rest,0);
+  const vs=S.vouchers.map(v=>({...v,rest:voucherRest(v)})),openV=vs.filter(v=>v.rest>0.004).sort(byValueNo),openSum=openV.reduce((s,v)=>s+v.rest,0);
   h+='<div class="bar"><h2>Gutscheine'+(openV.length?' · '+openV.length+' offen · '+eur(openSum):'')+'</h2><button class="sm" data-act="newvoucher">+ Gutschein verkaufen</button></div><div class="list">'+
-    (openV.length?openV.map(v=>'<div class="row tap" data-act="voucher" data-id="'+v.id+'"><div class="main"><div class="t">'+esc(v.no)+' · '+esc(v.forName||v.buyer||"")+'</div><div class="s">verkauft '+fdate(v.date,{day:"numeric",month:"short",year:"numeric"})+(v.forName?' von '+esc(v.buyer):'')+(v.rest<+v.amount?' · Wert '+eur(v.amount):'')+'</div></div><span class="num">'+eur(v.rest)+'</span>'+(v.validUntil&&v.validUntil<today()?'<span class="pill warn">abgelaufen</span>':'')+'</div>').join(""):'<div class="empty">Keine offenen Gutscheine.'+(vs.length?' '+vs.length+' bereits ganz eingelöst.':'')+'</div>')+'</div>';
+    (openV.length?openV.map(v=>'<div class="row tap" data-act="voucher" data-id="'+v.id+'"><div class="main"><div class="t">'+esc(v.no)+' · '+esc(v.forName||v.buyer||"")+'</div><div class="s">'+(v.legacy||!v.date?'Wert '+eur(v.amount)+' · vor der App verkauft':'verkauft '+fdate(v.date,{day:"numeric",month:"short",year:"numeric"})+(v.forName&&v.buyer?' von '+esc(v.buyer):''))+(!v.legacy&&v.date&&v.rest<+v.amount?' · Wert '+eur(v.amount):'')+'</div></div><span class="num">'+eur(v.rest)+'</span>'+(v.validUntil&&v.validUntil<today()?'<span class="pill warn">abgelaufen</span>':'')+'</div>').join(""):'<div class="empty">Keine offenen Gutscheine.'+(vs.length?' '+vs.length+' bereits ganz eingelöst.':'')+'</div>')+'</div>';
   h+='<div class="bar"><h2>Preisliste</h2><button class="sm" data-act="newtr">+ Behandlung</button></div><div class="list">'+(S.treatments.length?S.treatments.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(t=>'<div class="row tap" data-act="tr" data-id="'+t.id+'"><div class="main"><div class="t">'+esc(t.name)+'</div><div class="s">'+(+t.duration||0)+' Min.</div></div><span class="num">'+eur(t.price)+'</span></div>').join(""):'<div class="empty">Noch keine Preisliste. <button class="ghost" data-act="std">Von der Webseite übernehmen</button></div>')+'</div>';
   h+='<h2>Datensicherung</h2><div class="card"><p>'+esc(syncMsg||"–")+'</p><p class="note">'+(mode==="cloud"?"Automatisch bei jeder Änderung: aktueller Stand, vorheriger Stand und jeden Morgen eine Tagessicherung in OneDrive – alles verschlüsselt.":"Nur auf diesem Gerät. Bitte mit OneDrive verbinden.")+'</p><div class="actions"><span></span><button data-act="settings">Sicherungen & Einstellungen</button></div></div>';
   return h;
@@ -959,7 +978,7 @@ function reportSheets(R,apptById,dfmt,voucherById=()=>null){
     .concat(Object.entries(R.byPay).sort().map(([k,v])=>[k,{eur:r2(v)}]),[[],[{b:"Umsatz nach Behandlung"},{b:"Anzahl"},{b:"Summe"}]],
       Object.entries(R.byTreat).sort((a,b)=>b[1].sum-a[1].sum).map(([k,t])=>[k,t.n,{eur:r2(t.sum)}]));
   const gut=[["Nr.","Verkauft am","Gekauft von","Für","Wert","Eingelöst","Restwert","Gültig bis"]].concat(
-    R.vouchers.map(v=>[v.no||"",{date:v.date},v.buyer||"",v.forName||"",{eur:+v.amount||0},{eur:r2(v.used)},{eur:r2(v.rest)},v.validUntil?{date:v.validUntil}:""]));
+    R.vouchers.map(v=>[v.no||"",v.date?{date:v.date}:"vor der App",v.buyer||"",v.forName||"",{eur:+v.amount||0},{eur:r2(v.used)},{eur:r2(v.rest)},v.validUntil?{date:v.validUntil}:""]));
   return [{name:"Einnahmen",cols:[12,26,34,12,12],rows:einnahmen,table:true},{name:"Ausgaben",cols:[12,40,12,12],rows:ausgaben,table:true},
     {name:"Gutscheine",cols:[11,12,22,22,11,11,11,12],rows:gut,table:true},{name:"Übersicht",cols:[44,26,14],rows:sum}];
 }
